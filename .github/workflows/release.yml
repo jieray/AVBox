@@ -6,7 +6,7 @@ on:
       version:
         description: 'Release version / tag (e.g. v1.0.0)'
         required: true
-        default: 'v1.0.0'
+        default: 'v1.1.4'
       prerelease:
         description: '标记为 Pre-release'
         type: boolean
@@ -84,17 +84,36 @@ jobs:
           ls -l .key/app-release.jks
 
       - name: Build release APK
-        run: ./gradlew assembleRelease --no-daemon --stacktrace
+        id: gradle
+        run: |
+          set -o pipefail
+          ./gradlew assembleRelease --no-daemon --stacktrace 2>&1 | tee build.log
+          echo "exit=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+
+      - name: Publish build log back to repo (on failure)
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -uo pipefail
+          cp build.log _build_log.txt || true
+          git config user.name "ci-bot"
+          git config user.email "ci-bot@users.noreply.github.com"
+          git add -f _build_log.txt || true
+          git commit -m "ci: build log $(date -u +%Y%m%dT%H%M%SZ)" || echo "nothing to commit"
+          for i in 1 2 3; do
+            git push origin HEAD:${{ github.ref_name }} && break || sleep 5
+          done || echo "push failed"
 
       - name: Rename & verify APK
         id: apk
         run: |
           set -euo pipefail
-          SRC=app/build/outputs/apk/release/AVBox_release.apk
+          SRC=app/build/outputs/apk/release/X-BOX_release.apk
           test -f "$SRC" || { echo "::error::未找到 $SRC"; exit 1; }
 
           VERSION='${{ github.event.inputs.version }}'
-          OUT="AVBox_${VERSION}_arm64-v8a.apk"
+          OUT="X-BOX_${VERSION}_arm64-v8a.apk"
           cp "$SRC" "$OUT"
 
           APKSIGNER="$(find "${ANDROID_HOME:-$ANDROID_SDK_ROOT}/build-tools" -name apksigner -type f | sort -r | head -n1)"
@@ -166,16 +185,3 @@ jobs:
           body_path: release_body.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  # 用 GITHUB_TOKEN 创建的 release 不会触发 notify.yml 的 release 事件，故在此显式调用
-  notify:
-    needs: build
-    if: needs.build.outputs.release_existed != 'true'
-    uses: ./.github/workflows/notify.yml
-    with:
-      tag: ${{ inputs.version }}
-    secrets:
-      TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
-      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-      TELEGRAM_THREAD_ID: ${{ secrets.TELEGRAM_THREAD_ID }}
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
