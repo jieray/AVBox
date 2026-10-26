@@ -65,6 +65,9 @@ private val SeparatedSegmentSpacing = 8.dp
 
 private val SeparatedContentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
 
+/** 分类胶囊（全部/py/js/html/其他）用：字更小、内边距更窄，避免 5 项挤在一起显示不全 */
+val DenseSegmentContentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp)
+
 data class SegmentOption<T>(
     val label: String,
     val value: T,
@@ -83,6 +86,8 @@ fun <T> CapsuleSegmentedButton(
     style: SegmentStyle = SegmentStyle.Connected,
     containerColor: Color = MaterialTheme.colorScheme.surfaceContainer,
     pressMorph: Boolean = false,
+    textStyle: TextStyle = MaterialTheme.typography.bodySmall,
+    contentPadding: PaddingValues? = null,
 ) {
     val selectedIndex = options.indexOfFirst { it.value == selectedValue }.coerceAtLeast(0)
 
@@ -107,6 +112,8 @@ fun <T> CapsuleSegmentedButton(
                         style = style,
                         pressMorph = pressMorph,
                         modifier = Modifier.weight(1f),
+                        textStyle = textStyle,
+                        contentPadding = contentPadding,
                     )
                 }
             }
@@ -131,6 +138,8 @@ fun <T> CapsuleSegmentedButton(
                     containerColor = containerColor,
                     pressMorph = pressMorph,
                     modifier = Modifier.weight(1f),
+                    textStyle = textStyle,
+                    contentPadding = contentPadding,
                 )
             }
         }
@@ -153,6 +162,8 @@ fun <T> CapsuleSegmentedButton(
                 containerColor = containerColor,
                 pressMorph = pressMorph,
                 modifier = Modifier.weight(1f),
+                textStyle = textStyle,
+                contentPadding = contentPadding,
             )
         }
     }
@@ -170,6 +181,8 @@ private fun <T> CapsuleToggleButton(
     modifier: Modifier = Modifier,
     containerColor: Color = MaterialTheme.colorScheme.surfaceContainerHighest,
     pressMorph: Boolean = false,
+    textStyle: TextStyle = MaterialTheme.typography.bodySmall,
+    contentPadding: PaddingValues? = null,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -192,10 +205,10 @@ private fun <T> CapsuleToggleButton(
             shapes = if (pressMorph) PressMorphCapsuleShapes else CapsuleToggleShapes,
             colors = ToggleButtonDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceBright),
             elevation = null,
-            contentPadding = TrackContentPadding,
+            contentPadding = contentPadding ?: TrackContentPadding,
             interactionSource = interactionSource,
         ) {
-            SegmentContent(option, MaterialTheme.typography.labelSmall)
+            SegmentContent(option, MaterialTheme.typography.labelSmall, textStyle)
         }
     } else if (style == SegmentStyle.Separated) {
         ToggleButton(
@@ -204,10 +217,10 @@ private fun <T> CapsuleToggleButton(
             modifier = segmentModifier,
             shapes = if (pressMorph) PressMorphCapsuleShapes else CapsuleToggleShapes,
             colors = ToggleButtonDefaults.colors(containerColor = containerColor),
-            contentPadding = SeparatedContentPadding,
+            contentPadding = contentPadding ?: SeparatedContentPadding,
             interactionSource = interactionSource,
         ) {
-            SegmentContent(option, MaterialTheme.typography.bodySmall)
+            SegmentContent(option, MaterialTheme.typography.bodySmall, textStyle)
         }
     } else {
         ToggleButton(
@@ -234,14 +247,15 @@ private fun <T> CapsuleToggleButton(
             },
             colors = ToggleButtonDefaults.colors(containerColor = containerColor),
             interactionSource = interactionSource,
+            contentPadding = contentPadding ?: SeparatedContentPadding,
         ) {
-            SegmentContent(option, MaterialTheme.typography.bodySmall)
+            SegmentContent(option, MaterialTheme.typography.bodySmall, textStyle)
         }
     }
 }
 
 @Composable
-private fun <T> SegmentContent(option: SegmentOption<T>, badgeStyle: TextStyle) {
+private fun <T> SegmentContent(option: SegmentOption<T>, badgeStyle: TextStyle, textStyle: TextStyle) {
     if (option.icon != null) {
         Icon(imageVector = option.icon, contentDescription = null)
         Spacer(Modifier.size(ToggleButtonDefaults.IconSpacing))
@@ -250,7 +264,7 @@ private fun <T> SegmentContent(option: SegmentOption<T>, badgeStyle: TextStyle) 
         Spacer(Modifier.size(ToggleButtonDefaults.IconSpacing))
     }
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(text = option.label, overflow = TextOverflow.Ellipsis, maxLines = 1)
+        Text(text = option.label, style = textStyle, overflow = TextOverflow.Ellipsis, maxLines = 1)
         option.badge?.let { badge ->
             Text(
                 text = badge,
