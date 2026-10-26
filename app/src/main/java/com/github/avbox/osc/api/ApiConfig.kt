@@ -316,7 +316,7 @@ class ApiConfig private constructor() {
         AppLog.i("echo-api-config-----------load")
         ConfigApplier.applyAds(infoJson)
         // 订阅源自身的 proxy 规则（loadProxyRules）可能清空代理，这里按当前站点再应用一次
-        SiteProxy.apply(getHomeSourceBean())
+        SiteProxy.apply(homeSourceBean())
     }
 
     private fun loadDefaultConfig() {
