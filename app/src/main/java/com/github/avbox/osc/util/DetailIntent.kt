@@ -4,7 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import com.github.avbox.osc.ui.activity.DetailActivity
+import com.github.avbox.osc.ui.DetailActivity
 import com.github.avbox.osc.util.AppContextHolder
 import com.github.avbox.osc.util.ActivityStack
 import com.github.avbox.osc.util.AppLog as LOG

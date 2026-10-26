@@ -2,7 +2,7 @@ package com.github.catvod.crawler
 
 import android.os.Handler
 import android.os.Looper
-import com.github.avbox.osc.ui.activity.HtmlActivity
+import com.github.avbox.osc.ui.HtmlActivity
 import com.github.avbox.osc.util.AppContextHolder
 import com.github.avbox.osc.util.AppLog as LOG
 import org.json.JSONObject

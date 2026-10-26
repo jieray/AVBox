@@ -56,7 +56,6 @@ import com.github.avbox.osc.ui.page.openVodCardOrDetail
 import kotlinx.coroutines.delay
 import com.github.avbox.osc.net.SearchSettings
 import com.github.avbox.osc.util.HistoryHelper
-import com.github.avbox.osc.util.SearchSettingsState
 
 private const val SuggestDebounceMs = 120L
 

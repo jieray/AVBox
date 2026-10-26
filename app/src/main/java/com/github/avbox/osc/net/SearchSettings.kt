@@ -66,10 +66,8 @@ object SearchSettings {
         )
     }
 
-    private const val KEY_EMPTY_SOURCES = "search_sources_empty"
-
     private fun emptyApis(): Set<String> {
-        val raw = KV.get(KEY_EMPTY_SOURCES, "")
+        val raw: String = KV.get<String>(KEY_EMPTY_SOURCES, "")
         if (raw.isEmpty()) return emptySet()
         return raw.split(",").filter { it.isNotBlank() }.toSet()
     }
@@ -77,7 +75,7 @@ object SearchSettings {
     private fun setUpEmpty(api: String, empty: Boolean) {
         val set = emptyApis().toMutableSet()
         if (empty) set.add(api) else set.remove(api)
-        if (set.isEmpty()) KV.delete(KEY_EMPTY_SOURCES) else KV.put(KEY_EMPTY_SOURCES, set.joinToString(","))
+        if (set.isEmpty()) KV.delete(KEY_EMPTY_SOURCES) else KV.put<String>(KEY_EMPTY_SOURCES, set.joinToString(","))
     }
 
     fun isSourcesEmpty(): Boolean {
