@@ -81,11 +81,15 @@ fun SearchScreen(vm: SearchViewModel = rememberSearchViewModel()) {
     val searchedTitle by vm.searchedTitle.collectAsState()
     val exactMatch by vm.exactMatch.collectAsState()
     val sitesEmpty by vm.sitesEmpty.collectAsState()
-    val vodMenu = rememberVodCardMenuState(
-        lookupCollected = vm::isVideoCollected,
-        onCollectToggle = vm::toggleVideoCollect,
-    )
-    var resultLayout by remember { mutableStateOf(SearchSettingsState.resultLayout) }
+    val vodMenu = rememberVodCardMenuState()
+    var resultLayout by remember { mutableStateOf(SearchSettings.resultLayout()) }
+    val searchScope by vm.searchScope.collectAsState()
+
+    LaunchedEffect(Unit) {
+        if (SearchViewModel.isCheckedSourcesStale()) {
+            SearchViewModel.loadCheckedSources()
+        }
+    }
 
     LaunchedEffect(query) {
         val t = query.trim()
@@ -167,8 +171,16 @@ fun SearchScreen(vm: SearchViewModel = rememberSearchViewModel()) {
                     query = query,
                     topPad = topPad,
                     onSearch = { submit(it) },
-                    onClearHistory = { vm.clearSearchHistory() },
-                    onRemoveHistory = { word -> vm.removeSearchHistory(word) },
+                    onClearHistory = {
+                        HistoryHelper.clearSearchHistory()
+                        history = ArrayList()
+                    },
+                    onRemoveHistory = { word ->
+                        HistoryHelper.removeSearchHistory(word)
+                        history = KV.get(KVKeys.SEARCH_HISTORY, ArrayList())
+                    },
+                    scope = searchScope,
+                    onScopeChange = { vm.setScope(it) },
                 )
             } else {
                 SearchResultsContent(
