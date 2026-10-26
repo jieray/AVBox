@@ -2,9 +2,9 @@ package com.github.catvod.crawler
 
 import android.os.Handler
 import android.os.Looper
-import com.github.tvbox.osc.ui.activity.HtmlActivity
-import com.github.tvbox.osc.util.AppContextHolder
-import com.github.tvbox.osc.util.LOG
+import com.github.avbox.osc.ui.activity.HtmlActivity
+import com.github.avbox.osc.util.AppContextHolder
+import com.github.avbox.osc.util.AppLog as LOG
 import org.json.JSONObject
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit

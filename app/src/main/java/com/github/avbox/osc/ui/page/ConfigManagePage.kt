@@ -427,7 +427,7 @@ fun ConfigManageScreen(onNavigateBack: () -> Unit) {
                                 )
                             }
                         }
-                        items(mOrdered, key = { "${m.name}#$it" }) { value -> cardContent(value, Modifier.animateItem()) }
+                        items(ordered, key = { it }) { value -> cardContent(value, Modifier.animateItem()) }
                     }
                 }
             }

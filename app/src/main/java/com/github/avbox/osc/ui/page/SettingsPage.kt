@@ -2,6 +2,12 @@
 
 package com.github.avbox.osc.ui.page
 
+import com.github.avbox.osc.util.HistoryMerge
+
+import com.github.avbox.osc.util.MusicSettings
+
+import androidx.compose.ui.unit.Dp
+
 import android.content.Context
 import android.content.Intent
 import android.net.Uri

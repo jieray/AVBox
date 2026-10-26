@@ -55,6 +55,8 @@ import com.github.avbox.osc.ui.page.jumpToSearch
 import com.github.avbox.osc.ui.page.openVodCardOrDetail
 import kotlinx.coroutines.delay
 import com.github.avbox.osc.net.SearchSettings
+import com.github.avbox.osc.util.HistoryHelper
+import com.github.avbox.osc.util.SearchSettingsState
 
 private const val SuggestDebounceMs = 120L
 
@@ -82,15 +84,13 @@ fun SearchScreen(vm: SearchViewModel = rememberSearchViewModel()) {
     val searchedTitle by vm.searchedTitle.collectAsState()
     val exactMatch by vm.exactMatch.collectAsState()
     val sitesEmpty by vm.sitesEmpty.collectAsState()
-    val vodMenu = rememberVodCardMenuState()
-    var resultLayout by remember { mutableStateOf(SearchSettings.resultLayout()) }
+    val vodMenu = rememberVodCardMenuState(
+        lookupCollected = vm::isVideoCollected,
+        onCollectToggle = vm::toggleVideoCollect,
+    )
+    var resultLayout by remember { mutableStateOf(SearchSettingsState.config.resultLayout) }
     val searchScope by vm.searchScope.collectAsState()
 
-    LaunchedEffect(Unit) {
-        if (SearchViewModel.isCheckedSourcesStale()) {
-            SearchViewModel.loadCheckedSources()
-        }
-    }
 
     LaunchedEffect(query) {
         val t = query.trim()
@@ -173,12 +173,10 @@ fun SearchScreen(vm: SearchViewModel = rememberSearchViewModel()) {
                     topPad = topPad,
                     onSearch = { submit(it) },
                     onClearHistory = {
-                        HistoryHelper.clearSearchHistory()
-                        history = ArrayList()
+                        vm.clearSearchHistory()
                     },
                     onRemoveHistory = { word ->
-                        HistoryHelper.removeSearchHistory(word)
-                        history = KV.get(KVKeys.SEARCH_HISTORY, ArrayList())
+                        vm.removeSearchHistory(word)
                     },
                     scope = searchScope,
                     onScopeChange = { vm.setScope(it) },

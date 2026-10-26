@@ -122,13 +122,7 @@ import com.github.avbox.osc.ui.components.SegmentOption
 import com.github.avbox.osc.ui.components.SegmentStyle
 import com.github.avbox.osc.ui.components.CapsuleSegmentedButton
 import com.github.avbox.osc.ui.components.SettingsOptionRow
-import com.github.avbox.osc.ui.components.SiteCardShapeLeft
-import com.github.avbox.osc.ui.components.SiteCardShapeRight
-import com.github.avbox.osc.ui.components.SiteCardShapeSingle
 import com.github.avbox.osc.ui.components.DenseSegmentContentPadding
-import com.github.avbox.osc.ui.components.SiteKind
-import com.github.avbox.osc.ui.components.SiteSourceCard
-import com.github.avbox.osc.ui.components.siteKindOf
 import com.github.avbox.osc.ui.components.SettingsRow
 import com.github.avbox.osc.ui.components.SkeletonBox
 import com.github.avbox.osc.ui.components.VodCard
@@ -773,12 +767,9 @@ fun HomePage(
     }
 
     if (showSearchSettings) {
-        val searchSources by SearchSourcesState.state.collectAsStateWithLifecycle()
         SearchSettingsSheet(
-            sources = searchSources.sources,
-            selected = searchSources.pickedKeys,
-            onApplySelection = { SearchSourcesState.applySelection(it) },
             onDismiss = { showSearchSettings = false },
+            onSelectionChanged = { SearchSourcesState.refresh() },
         )
     }
 

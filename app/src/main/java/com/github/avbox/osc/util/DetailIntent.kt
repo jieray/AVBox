@@ -6,8 +6,8 @@ import android.content.Intent
 import android.os.Bundle
 import com.github.avbox.osc.ui.activity.DetailActivity
 import com.github.avbox.osc.util.AppContextHolder
-import com.github.avbox.osc.util.AppManager
-import com.github.avbox.osc.util.AppLog
+import com.github.avbox.osc.util.ActivityStack
+import com.github.avbox.osc.util.AppLog as LOG
 
 /**
  * 详情页唤起兼容层：对齐影视TV / TVBox 系扩展脚本的调用约定。
@@ -84,7 +84,7 @@ object DetailIntent {
     private fun resolveContext(context: Context?): Context? {
         if (context is Activity) return context
         val current = try {
-            AppManager.getInstance().currentActivity()
+            ActivityStack.getInstance().currentActivity()
         } catch (th: Throwable) {
             null
         }

@@ -1,5 +1,7 @@
 package com.github.avbox.osc.util
 
+import com.github.avbox.osc.util.AppLog as LOG
+
 import com.github.avbox.osc.bean.SourceBean
 
 import java.util.HashMap

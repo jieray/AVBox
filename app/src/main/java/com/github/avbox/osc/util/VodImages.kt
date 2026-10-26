@@ -1,5 +1,7 @@
 package com.github.avbox.osc.util
 
+import com.github.avbox.osc.util.AppLog as LOG
+
 import coil3.ImageLoader
 import coil3.SingletonImageLoader
 import coil3.request.crossfade
@@ -46,11 +48,10 @@ object VodImages {
     private fun picClient(): OkHttpClient = OkHttpClient.Builder()
         .apply {
             dnsProvider?.invoke()?.let { dns(it) }
-            OkGoHelper.getDefaultClient()?.dns?.let { dns(it) }
         }
         // 宫格海报图走与爬虫同一套站点代理规则，否则开了代理图片仍直连
-        .proxySelector(OkGoHelper.proxySelector())
-        .proxyAuthenticator(OkGoHelper.proxyAuthenticator())
+        .proxySelector(HttpClients.proxySelector())
+        .proxyAuthenticator(HttpClients.proxyAuthenticator())
         .cache(picCache()?.let { Cache(it, PIC_HTTP_CACHE_MB * 1024L * 1024L) })
         .addInterceptor(picHeaderInterceptor)
         .addNetworkInterceptor(picForceCacheInterceptor)

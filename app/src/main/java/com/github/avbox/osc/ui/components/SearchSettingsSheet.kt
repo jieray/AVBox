@@ -1,5 +1,7 @@
 package com.github.avbox.osc.ui.components
 
+import com.github.avbox.osc.api.SearchSourcesState
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -43,6 +45,10 @@ import com.github.avbox.osc.R
 import com.github.avbox.osc.bean.SourceBean
 import com.github.avbox.osc.util.SearchSettingsState
 import com.github.avbox.osc.util.HomeSettings
+import com.github.avbox.osc.ui.SiteCardShapeLeft
+import com.github.avbox.osc.ui.SiteCardShapeRight
+import com.github.avbox.osc.ui.SiteCardShapeSingle
+import com.github.avbox.osc.ui.SiteSourceCard
 import com.github.avbox.osc.ui.SiteKind
 import com.github.avbox.osc.api.ApiConfig
 import com.github.avbox.osc.ui.siteKindOf
@@ -51,9 +57,14 @@ import com.github.avbox.osc.ui.siteKindOf
 fun SearchSettingsSheet(onDismiss: () -> Unit, onSelectionChanged: () -> Unit) {
     var reloadTick by remember { mutableStateOf(0) }
     var kind by remember { mutableStateOf(SiteKind.ALL) }
-    val sources = remember(reloadTick) { ApiConfig.get().getSourceBeanList().filter(SourceBean::isSearchable) }
+    val searchSources by SearchSourcesState.state.collectAsStateWithLifecycle()
+    LaunchedEffect(reloadTick) { SearchSourcesState.refresh() }
+    val selected: Set<String> = searchSources.pickedKeys
+    val sources = searchSources.sources
     val visible = remember(sources, kind) { sources.filter { kind == SiteKind.ALL || siteKindOf(it.api) == kind } }
     val allKeys = remember(sources) { sources.map { it.key.orEmpty() }.toSet() }
+    val applySelection: (Set<String>) -> Unit = { SearchSourcesState.applySelection(it) }
+    val onApplySelection: (Set<String>) -> Unit = { SearchSourcesState.applySelection(it) }
     val homeLayout by HomeSettings.layoutFlow.collectAsStateWithLifecycle()
     var exactMatch by remember { mutableStateOf(SearchSettingsState.exactMatch) }
 

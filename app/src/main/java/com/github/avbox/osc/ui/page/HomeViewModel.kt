@@ -226,7 +226,7 @@ class HomeViewModel : ViewModel(), TmdbPosterCache {
 
     /** 刷新站点列表与订阅源列表（不重载首页内容） */
     fun refreshSources() {
-        sources.value = ApiConfig.get().switchSourceBeanList()
+        _sources.value = ApiConfig.get().switchSourceBeanList()
         refreshSubscribes()
     }
 

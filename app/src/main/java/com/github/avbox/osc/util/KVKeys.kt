@@ -130,4 +130,11 @@ object KVKeys {
     const val TMDB_IMAGE_BASE = "tmdb_image_base"
     const val TMDB_API_BASE_DEFAULT = "https://api.tmdb.org"
     const val TMDB_IMAGE_BASE_DEFAULT = "https://images.tmdb.org/t/p"
+    const val PROXY_URL = "proxy_url"
+    const val SITE_PROXY_OVERRIDE = "site_proxy_override"
+    const val SITE_PROXY_OVERRIDE_API = "site_proxy_override_api"
+    const val SITE_EXT_OVERRIDE = "site_ext_override"
+    const val HOME_SITE_COLUMNS = "home_site_columns"
+    const val PLAY_AUTO_LANDSCAPE = "play_auto_landscape"
+    const val PLAY_AUTO_LANDSCAPE_DEFAULT = false
 }

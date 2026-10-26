@@ -1,8 +1,10 @@
 package com.github.avbox.osc.util
 
+import com.github.avbox.osc.util.AppLog as LOG
+
 import com.github.avbox.osc.bean.ProxyRule
 import com.github.avbox.osc.bean.SourceBean
-import com.github.avbox.osc.net.OkGoHelper
+import com.github.avbox.osc.net.HttpClients
 import com.google.gson.JsonParser
 
 import java.util.HashMap
@@ -157,7 +159,7 @@ object SiteProxy {
      */
     fun suspendInfra() {
         try {
-            OkGoHelper.proxySelector().suspendSiteProxy = true
+            HttpClients.proxySelector().suspendSiteProxy = true
         } catch (th: Throwable) {
             LOG.d(TAG, "suspend infra skipped | " + th.message)
         }
@@ -165,7 +167,7 @@ object SiteProxy {
 
     fun resumeInfra() {
         try {
-            OkGoHelper.proxySelector().suspendSiteProxy = false
+            HttpClients.proxySelector().suspendSiteProxy = false
         } catch (th: Throwable) {
             LOG.d(TAG, "resume infra skipped | " + th.message)
         }
@@ -175,7 +177,7 @@ object SiteProxy {
         resumeInfra()
         if (url.isEmpty()) {
             try {
-                OkGoHelper.setProxyList(null)
+                HttpClients.setProxyList(null)
             } catch (th: Throwable) {
                 LOG.e(TAG, th)
             }
@@ -190,7 +192,7 @@ object SiteProxy {
             // 代理等于没开。hosts 用空串：contains("") 恒真，且不依赖正则。
             val json = "[{\"name\":\"site_proxy\",\"hosts\":[\"\"],\"urls\":[\"" + url + "\"]}]"
             val array = JsonParser.parseString(json).asJsonArray
-            OkGoHelper.setProxyList(ProxyRule.arrayFrom(array))
+            HttpClients.setProxyList(ProxyRule.arrayFrom(array))
         } catch (th: Throwable) {
             LOG.e(TAG, th)
         }

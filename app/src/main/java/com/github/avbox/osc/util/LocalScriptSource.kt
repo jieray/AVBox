@@ -1,5 +1,7 @@
 package com.github.avbox.osc.util
 
+import com.github.avbox.osc.util.AppLog as LOG
+
 import org.json.JSONArray
 import org.json.JSONObject
 

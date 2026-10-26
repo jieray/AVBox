@@ -108,9 +108,9 @@ object ConfigParser {
             sb.name = if (obj.has("name")) obj.get("name").asString.trim { it <= ' ' } else siteKey
             sb.type = obj.get("type").asInt
             sb.api = normalizeLocalApi(obj.get("api").asString.trim { it <= ' ' })
-            sb.searchable = DefaultConfig.safeJsonInt(obj, "searchable", 1))
-            sb.quickSearch = DefaultConfig.safeJsonInt(obj, "quickSearch", 1))
-            sb.changeable = DefaultConfig.safeJsonInt(obj, "changeable", 1))
+            sb.searchable = DefaultConfig.safeJsonInt(obj, "searchable", 1)
+            sb.quickSearch = DefaultConfig.safeJsonInt(obj, "quickSearch", 1)
+            sb.changeable = DefaultConfig.safeJsonInt(obj, "changeable", 1)
             if (siteKey.startsWith("py_")) {
                 sb.filterable = 1
             } else {

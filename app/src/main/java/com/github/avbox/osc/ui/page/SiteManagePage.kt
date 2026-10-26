@@ -36,10 +36,10 @@ import com.github.avbox.osc.ui.components.AVBoxAlertDialog
 import com.github.avbox.osc.ui.components.AppTopBarScaffold
 import com.github.avbox.osc.ui.components.CapsuleSegmentedButton
 import com.github.avbox.osc.ui.components.DenseSegmentContentPadding
-import com.github.avbox.osc.ui.components.SiteCardShapeSingle
-import com.github.avbox.osc.ui.components.SiteKind
-import com.github.avbox.osc.ui.components.SiteSourceCard
-import com.github.avbox.osc.ui.components.siteKindOf
+import com.github.avbox.osc.ui.SiteCardShapeSingle
+import com.github.avbox.osc.ui.SiteKind
+import com.github.avbox.osc.ui.SiteSourceCard
+import com.github.avbox.osc.ui.siteKindOf
 import com.github.avbox.osc.ui.components.SegmentOption
 import com.github.avbox.osc.ui.components.TopBarActionBox
 import com.github.avbox.osc.util.LocalScriptSource

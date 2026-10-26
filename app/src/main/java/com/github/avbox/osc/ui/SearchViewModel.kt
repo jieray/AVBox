@@ -86,6 +86,17 @@ class SearchViewModel(initialTitle: String? = null) : ViewModel(), TmdbPosterCac
         AppGraph.collectRepository.isVodCollect(video.sourceKey, video.id)
     }
 
+    fun toggleVideoCollect(video: Movie.Video, toCollect: Boolean) {
+        viewModelScope.launch(Dispatchers.IO) {
+            if (toCollect) {
+                AppGraph.collectRepository.insertVodCollect(video.sourceKey, toVodInfo(video))
+            } else {
+                AppGraph.collectRepository.deleteVodCollect(video.sourceKey, toVodInfo(video))
+            }
+        }
+    }
+
+
     /** 当前搜索范围：全站 / 站内 / 选中。 */
     val searchScope = MutableStateFlow(SearchSettings.scope())
 
