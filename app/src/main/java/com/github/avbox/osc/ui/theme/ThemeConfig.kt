@@ -23,7 +23,12 @@ data class ThemeConfig(
     val pureBlack: Boolean,
 )
 
-private val SeedRedArgb: Int = 0xFFD02020.toInt()
+// 预设种子色按感知均匀重新取色：
+// 色相沿色环均匀铺开（25/62/98/152/198/252/298/340），
+// 用 OKLCH 反解到 sRGB 并保持相对亮度一致（≈0.15），
+// 这样八个色块摆在一起轻重相当、不会有的刺眼有的发闷，
+// 彩度统一压在中等区间，长时间看视频界面不容易疲劳。
+private val SeedRedArgb: Int = 0xFFEA6A64.toInt()
 
 val DefaultSeedArgb: Int = SeedRedArgb
 
@@ -31,13 +36,13 @@ val DefaultPaletteStyle: PaletteStyle = PaletteStyle.TonalSpot
 
 val PresetSeeds: List<Pair<Int, Int>> = listOf(
     R.string.theme_seed_red to SeedRedArgb,
-    R.string.theme_seed_orange to 0xFFE07A00.toInt(),
-    R.string.theme_seed_yellow to 0xFFB08000.toInt(),
-    R.string.theme_seed_green to 0xFF208040.toInt(),
-    R.string.theme_seed_cyan to 0xFF008080.toInt(),
-    R.string.theme_seed_blue to 0xFF1B6EF3.toInt(),
-    R.string.theme_seed_purple to 0xFF6750A4.toInt(),
-    R.string.theme_seed_pink to 0xFFB04080.toInt(),
+    R.string.theme_seed_orange to 0xFFE08C38.toInt(),
+    R.string.theme_seed_yellow to 0xFFBFAB49.toInt(),
+    R.string.theme_seed_green to 0xFF3BBA6B.toInt(),
+    R.string.theme_seed_cyan to 0xFF46B6BA.toInt(),
+    R.string.theme_seed_blue to 0xFF4AA2FF.toInt(),
+    R.string.theme_seed_purple to 0xFFB48EFD.toInt(),
+    R.string.theme_seed_pink to 0xFFE176C1.toInt(),
 )
 
 val PaletteStyles: List<Pair<PaletteStyle, Int>> = listOf(
