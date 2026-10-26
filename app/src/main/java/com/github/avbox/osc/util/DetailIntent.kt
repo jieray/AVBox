@@ -76,7 +76,7 @@ object DetailIntent {
         try {
             ctx.startActivity(intent)
         } catch (th: Throwable) {
-            LOG.e("DetailIntent", th)
+            AppLog.e("DetailIntent", th)
         }
     }
 

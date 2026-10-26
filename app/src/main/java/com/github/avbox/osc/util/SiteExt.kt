@@ -23,7 +23,7 @@ object SiteExt {
         return try {
             KV.get(KVKeys.SITE_EXT_OVERRIDE, HashMap<String, String>())
         } catch (th: Throwable) {
-            LOG.e(TAG, th)
+            AppLog.e(TAG, th)
             HashMap()
         }
     }
@@ -39,7 +39,7 @@ object SiteExt {
         val next = HashMap<String, String>(overrides())
         if (value.isEmpty()) next.remove(key) else next[key] = value
         KV.put(KVKeys.SITE_EXT_OVERRIDE, next)
-        LOG.i("$TAG: set $key -> $value")
+        AppLog.i("$TAG: set $key -> $value")
     }
 
     /** 解析站点后回填本地覆盖 */

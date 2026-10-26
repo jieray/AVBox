@@ -161,7 +161,7 @@ object SiteProxy {
         try {
             HttpClients.proxySelector().suspendSiteProxy = true
         } catch (th: Throwable) {
-            LOG.d(TAG, "suspend infra skipped | " + th.message)
+            AppLog.d(TAG, "suspend infra skipped | " + th.message)
         }
     }
 
@@ -169,7 +169,7 @@ object SiteProxy {
         try {
             HttpClients.proxySelector().suspendSiteProxy = false
         } catch (th: Throwable) {
-            LOG.d(TAG, "resume infra skipped | " + th.message)
+            AppLog.d(TAG, "resume infra skipped | " + th.message)
         }
     }
 
@@ -179,10 +179,10 @@ object SiteProxy {
             try {
                 HttpClients.setProxyList(null)
             } catch (th: Throwable) {
-                LOG.e(TAG, th)
+                AppLog.e(TAG, th)
             }
             syncPython("")
-            LOG.i("$TAG: proxy off")
+            AppLog.i("$TAG: proxy off")
             return
         }
         try {
@@ -194,10 +194,10 @@ object SiteProxy {
             val array = JsonParser.parseString(json).asJsonArray
             HttpClients.setProxyList(ProxyRule.arrayFrom(array))
         } catch (th: Throwable) {
-            LOG.e(TAG, th)
+            AppLog.e(TAG, th)
         }
         syncPython(url)
-        LOG.i("$TAG: proxy on -> $url")
+        AppLog.i("$TAG: proxy on -> $url")
     }
 
     /** py 脚本用 requests 自己发请求，不走 OkHttp，单独同步地址 */
@@ -207,7 +207,7 @@ object SiteProxy {
             val app = loader?.pyApp ?: return
             app.callAttr("setSiteProxy", url)
         } catch (th: Throwable) {
-            LOG.d(TAG, "python proxy sync skipped | " + th.message)
+            AppLog.d(TAG, "python proxy sync skipped | " + th.message)
         }
     }
 }

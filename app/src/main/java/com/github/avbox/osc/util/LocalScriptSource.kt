@@ -143,7 +143,7 @@ object LocalScriptSource {
         try {
             storeFile(dir).writeText(root.toString())
         } catch (th: Throwable) {
-            LOG.e("LocalScriptSource", th)
+            AppLog.e("LocalScriptSource", th)
         }
     }
 
