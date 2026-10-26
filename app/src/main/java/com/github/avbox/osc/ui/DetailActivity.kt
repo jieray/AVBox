@@ -3,6 +3,7 @@ package com.github.avbox.osc.ui
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
+import com.github.avbox.osc.util.KV
 import android.content.res.Configuration
 import android.net.Uri
 import android.os.Looper
@@ -47,6 +48,8 @@ class DetailActivity : BaseActivity(), PageHost {
 
     var playContainer: PlayContainer? by mutableStateOf<PlayContainer?>(null)
         private set
+    private var fullScreen = false
+    private var portraitLockPending = false
     private var appliedFullscreen = false
     private var pendingEpisodeSync = false
     private var videoSizeWatchArmed = false
@@ -103,6 +106,13 @@ class DetailActivity : BaseActivity(), PageHost {
                     return
                 }
                 if (vm.exitingFullscreen.value) return
+                if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                    // 横屏返回第一步：只转回竖屏（等同点播放器旋转按钮），播放页保持不退出。
+                    // 再按一次返回才退出全屏、回到详情页
+                    if (container != null && container.onBackPressed()) return
+                    lockPortrait()
+                    return
+                }
                 if (vm.fullScreen.value) {
                     if (container != null && container.onBackPressed()) return
                     if (DetailPlaybackPolicy.plan(DetailPlaybackEntry.ExitFullscreen).stopPlayback) {
@@ -342,9 +352,15 @@ class DetailActivity : BaseActivity(), PageHost {
     }
 
     fun applyFullscreen(full: Boolean) {
-        if (appliedFullscreen == full) return
-        appliedFullscreen = full
-        requestedOrientation = orientationPolicyValue()
+        if (fullScreen == full) return
+        fullScreen = full
+        if (full) {
+            portraitLockPending = false
+            requestedOrientation = orientationPolicyValue()
+        } else {
+            // 退出全屏后只要还在横屏，就锁回竖屏
+            lockPortrait()
+        }
         if (full) {
             armVideoSizeWatch()
             hideSysBar()
@@ -380,14 +396,40 @@ class DetailActivity : BaseActivity(), PageHost {
         applyVideoOrientation(portraitVideo)
     }
 
+    override fun orientationPolicyValue(): Int {
+        if (portraitLockPending) return ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT
+        return super.orientationPolicyValue()
+    }
+
     private fun applyVideoOrientation(portraitVideo: Boolean) {
-        if (!vm.fullScreen.value || portraitVideo) return
+        if (!vm.fullScreen.value) return
+        if (portraitVideo) return
+        if (!KV.get(KVKeys.PLAY_AUTO_LANDSCAPE, KVKeys.PLAY_AUTO_LANDSCAPE_DEFAULT)) return
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
+        if (portraitLockPending &&
+            newConfig.orientation != Configuration.ORIENTATION_PORTRAIT
+        ) {
+            // 转竖屏完成前不要松锁，否则会被传感器重新带回横屏
+            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT
+        }
         settleRotationAfterExit()
+    }
+
+    private fun lockPortrait() {
+        portraitLockPending = true
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT
+    }
+
+    /**
+     * 手动点播放器旋转按钮时解除竖屏锁定，
+     * 否则 onConfigurationChanged 会把刚转过去的横屏又拉回竖屏。
+     */
+    fun clearPortraitLock() {
+        portraitLockPending = false
     }
 
     fun settleRotationAfterExit() {
