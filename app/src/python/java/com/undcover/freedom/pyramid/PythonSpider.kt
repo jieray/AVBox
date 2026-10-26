@@ -10,6 +10,7 @@ import androidx.media3.common.util.UriUtil
 import com.chaquo.python.PyObject
 import com.github.catvod.crawler.Spider
 import com.github.avbox.osc.util.AppLog
+import com.github.avbox.osc.util.LocalApi
 import com.github.avbox.osc.util.RegexUtils
 
 import org.json.JSONArray
@@ -49,14 +50,37 @@ class PythonSpider : Spider {
     fun init(context: Context?, url: String?, extend: String?) {
         val pyApp = requireNotNull(PythonLoader.getInstance().pyApp)
         app = pyApp
-        val retValue = pyApp.callAttr("downloadPlugin", cachePath, url)
-        val uri = Uri.parse(requireNotNull(url))
+        // py 只认 file:// 开头的本地路径，clan://localhost/ 是 js 的本地通道，这里先换算。
+        val localUrl = LocalApi.toFileUrl(url)
+        Log.i("PyLoader", "echo-init url: " + url + " -> " + localUrl)
+        val retValue = pyApp.callAttr("downloadPlugin", cachePath, localUrl)
+        val uri = Uri.parse(localUrl)
         var extInfo = extend
         if (extInfo == null || extInfo.length == 0) extInfo = uri.getQueryParameter("extend")
         if (null == extInfo) extInfo = ""
-        val path = retValue.toString()
+        var path = retValue.toString()
         Log.i("PyLoader", "echo-init path: " + path)
-        val file = File(path)
+        var file = File(path)
+        if (!file.exists()) {
+            // 兜底：python 侧没能拿到文件（clan:// 被当远程地址去下载、外部存储不可直接
+            // open、路径不在外部存储根等）。这里由 Java 层把源文件复制进 App 私有缓存目录，
+            // 再让 python 从该处加载 —— 该目录 App 一定有权限读。
+            val src = LocalApi.sourceFile(localUrl)
+            if (src != null) {
+                val dst = File(cachePath, src.name)
+                try {
+                    dst.parentFile?.mkdirs()
+                    src.inputStream().use { input ->
+                        dst.outputStream().use { output -> input.copyTo(output) }
+                    }
+                    path = dst.absolutePath
+                    file = dst
+                    Log.i("PyLoader", "echo-init fallback copy: " + src.absolutePath + " -> " + path)
+                } catch (th: Throwable) {
+                    Log.e("PyLoader", "copy local script failed: " + th.message)
+                }
+            }
+        }
         if (file.exists()) {
             val spider = pyApp.callAttr("loadFromDisk", path)
             pySpider = spider
@@ -71,7 +95,7 @@ class PythonSpider : Spider {
                 val api = po.toString()
                 Log.i("PyLoader", "echo-init api: " + api)
                 var depUrl = PythonLoader.getInstance().getUrlByApi(api)
-                if (depUrl.isEmpty()) depUrl = resolveDependenceUrl(url, api)
+                if (depUrl.isEmpty()) depUrl = resolveDependenceUrl(localUrl, api)
                 if (!depUrl.isEmpty()) {
                     Log.i("PyLoader", "echo-init depUrl: " + depUrl)
                     val tmpPath = pyApp.callAttr("downloadPlugin", cachePath, depUrl).toString()
