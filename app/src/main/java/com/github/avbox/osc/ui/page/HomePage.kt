@@ -12,8 +12,11 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -35,6 +38,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items as gridItems
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -42,8 +49,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -52,6 +62,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshState
 import androidx.compose.material3.pulltorefresh.pullToRefresh
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -61,6 +72,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
@@ -79,7 +91,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import com.github.avbox.osc.R
 import com.github.avbox.osc.bean.Movie
 import com.github.avbox.osc.bean.MovieSort
@@ -103,7 +118,17 @@ import com.github.avbox.osc.ui.components.SearchSettingsSheet
 import com.github.avbox.osc.ui.components.SettingsCard
 import com.github.avbox.osc.ui.components.SettingsCardPosition
 import com.github.avbox.osc.ui.components.SettingsGroup
+import com.github.avbox.osc.ui.components.SegmentOption
+import com.github.avbox.osc.ui.components.SegmentStyle
+import com.github.avbox.osc.ui.components.CapsuleSegmentedButton
 import com.github.avbox.osc.ui.components.SettingsOptionRow
+import com.github.avbox.osc.ui.components.SiteCardShapeLeft
+import com.github.avbox.osc.ui.components.SiteCardShapeRight
+import com.github.avbox.osc.ui.components.SiteCardShapeSingle
+import com.github.avbox.osc.ui.components.DenseSegmentContentPadding
+import com.github.avbox.osc.ui.components.SiteKind
+import com.github.avbox.osc.ui.components.SiteSourceCard
+import com.github.avbox.osc.ui.components.siteKindOf
 import com.github.avbox.osc.ui.components.SettingsRow
 import com.github.avbox.osc.ui.components.SkeletonBox
 import com.github.avbox.osc.ui.components.VodCard
@@ -117,6 +142,8 @@ import com.github.avbox.osc.ui.page.jumpToSearch
 import com.github.avbox.osc.ui.theme.AppThemeState
 import com.github.avbox.osc.ui.theme.cardContainer
 import com.github.avbox.osc.util.HomeSettings
+import com.github.avbox.osc.util.SiteExt
+import com.github.avbox.osc.util.SiteProxy
 import com.kyant.capsule.ContinuousCapsule
 import kotlin.math.roundToInt
 
@@ -169,6 +196,23 @@ fun HomePage(
     }
 
     var showSourceSheet by remember { mutableStateOf(false) }
+    var proxyOn by remember(currentSource) { mutableStateOf(SiteProxy.isEnabled(currentSource)) }
+    // 从站点管理 / 配置管理等页面回到首页时，按当前站点重新套一次代理：
+    // 那边改过配置后，首页的代理状态可能与新配置不一致（旧的还挂着、新的没生效）
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner, currentSource) {
+        val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                SiteProxy.apply(currentSource)
+                proxyOn = SiteProxy.isEnabled(currentSource)
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+    var extValue by remember(currentSource) { mutableStateOf(SiteExt.current(currentSource)) }
+    var extDialog by remember { mutableStateOf(false) }
+    var proxyUrlDialog by remember { mutableStateOf(false) }
     var showSearchSettings by remember { mutableStateOf(false) }
     var backdropSeed by remember { mutableStateOf<Int?>(null) }
     var backdropPic by remember { mutableStateOf("") }
@@ -277,6 +321,55 @@ fun HomePage(
                         imageVector = Icons.Filled.Search,
                         contentDescription = stringResource(R.string.common_search),
                         tint = MaterialTheme.colorScheme.onSurface,
+                    )
+                }
+                // 与左侧搜索按钮同款：不套圆圈，只靠图标颜色区分开/关
+                val extOn = extValue.isNotEmpty()
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clickable { extDialog = true },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.player_ic_params),
+                        contentDescription = stringResource(R.string.home_site_ext),
+                        tint = if (extOn) {
+                            MaterialTheme.colorScheme.tertiary
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        },
+                        modifier = Modifier.size(if (extOn) 24.dp else 20.dp),
+                    )
+                }
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .combinedClickable(
+                            onClick = {
+                                val bean = currentSource ?: return@combinedClickable
+                                val on = SiteProxy.toggle(bean)
+                                proxyOn = on
+                                Toast.makeText(
+                                    context,
+                                    context.getString(if (on) R.string.toast_proxy_on else R.string.toast_proxy_off),
+                                    Toast.LENGTH_SHORT,
+                                ).show()
+                                vm.reload()
+                            },
+                            onLongClick = { proxyUrlDialog = true },
+                        ),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_proxy),
+                        contentDescription = stringResource(R.string.home_proxy),
+                        tint = if (proxyOn) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        },
+                        modifier = Modifier.size(if (proxyOn) 24.dp else 20.dp),
                     )
                 }
             }
@@ -468,9 +561,10 @@ fun HomePage(
     }
 
     if (showSourceSheet) {
+        val sheetHeight = (screenHeightDp * 0.72f).dp
         AVBoxBottomSheet(
             onDismissRequest = { showSourceSheet = false },
-            modifier = Modifier.heightIn(max = (screenHeightDp * 0.9f).dp),
+            modifier = Modifier.height(sheetHeight),
             title = stringResource(R.string.home_subscription_source),
             containerColor = MaterialTheme.colorScheme.surfaceContainer,
             isScrollable = false,
@@ -483,6 +577,7 @@ fun HomePage(
             var query by remember { mutableStateOf("") }
             val filtered = remember(sources, query) { SiteSearch.filter(sources, query) }
             val subscribeOptions = remember(subscribes) { subscribes.map { it.name.ifEmpty { it.url } } }
+            val sourceGrid by HomeSettings.sourceGridFlow.collectAsStateWithLifecycle()
             val listState = rememberLazyListState()
             val selectedIndex = filtered.indexOfFirst { it.key == currentSource?.key }
             LaunchedEffect(query.isEmpty()) {
@@ -504,85 +599,168 @@ fun HomePage(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(start = 16.dp, end = 16.dp, bottom = 12.dp),
-                trailing = if (subscribeOptions.isEmpty()) {
-                    null
-                } else {
-                    {
-                        AVBoxOptionMenuAction(
-                            options = subscribeOptions,
-                            selectedIndex = activeSubscribeIndex,
-                            onSelect = { index -> subscribes.getOrNull(index)?.let(::switchSubscribe) },
-                            contentDescription = stringResource(R.string.home_subscription_source),
-                        )
+                trailing = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        if (subscribeOptions.isNotEmpty()) {
+                            AVBoxOptionMenuAction(
+                                options = subscribeOptions,
+                                selectedIndex = activeSubscribeIndex,
+                                onSelect = { index -> subscribes.getOrNull(index)?.let(::switchSubscribe) },
+                                contentDescription = stringResource(R.string.home_subscription_source),
+                            )
+                        }
+                        IconButton(onClick = { vm.refreshSourceList() }) {
+                            Icon(
+                                imageVector = Icons.Outlined.Refresh,
+                                contentDescription = stringResource(R.string.common_refresh),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(20.dp),
+                            )
+                        }
+                        IconButton(onClick = { HomeSettings.setSourceGrid(!sourceGrid) }) {
+                            Icon(
+                                painter = painterResource(
+                                    if (sourceGrid) R.drawable.ic_layout_vertical else R.drawable.ic_layout_horizontal,
+                                ),
+                                contentDescription = stringResource(
+                                    if (sourceGrid) R.string.config_list_single else R.string.config_list_double,
+                                ),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(20.dp),
+                            )
+                        }
                     }
                 },
             )
-            LazyColumn(
-                state = listState,
+            var sourceKind by remember { mutableStateOf(SiteKind.ALL) }
+            val visible = remember(filtered, sourceKind) {
+                filtered.filter { sourceKind == SiteKind.ALL || siteKindOf(it.api) == sourceKind }
+            }
+            val perRow = if (sourceGrid) 2 else 1
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(max = 420.dp)
+                    .padding(start = 16.dp, end = 16.dp, bottom = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                CapsuleSegmentedButton(
+                    options = SiteKind.values().map { SegmentOption(it.label, it) },
+                    selectedValue = sourceKind,
+                    onOptionSelected = { sourceKind = it },
+                    style = SegmentStyle.Separated,
+                    containerColor = MaterialTheme.colorScheme.surfaceBright,
+                    pressMorph = true,
+                    textStyle = MaterialTheme.typography.labelMedium,
+                    contentPadding = DenseSegmentContentPadding,
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = 4.dp),
+                )
+            }
+            val gridLineColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
+            val gridRowHeight = 52.dp
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, end = 16.dp)
+                    .drawBehind {
+                        val rowH = gridRowHeight.toPx()
+                        val colW = size.width / perRow
+                        var y = rowH
+                        while (y < size.height) {
+                            drawLine(
+                                color = gridLineColor,
+                                start = Offset(0f, y),
+                                end = Offset(size.width, y),
+                                strokeWidth = 1f,
+                            )
+                            y += rowH
+                        }
+                        for (c in 1 until perRow) {
+                            val x = colW * c
+                            drawLine(
+                                color = gridLineColor,
+                                start = Offset(x, 0f),
+                                end = Offset(x, size.height),
+                                strokeWidth = 1f,
+                            )
+                        }
+                    }
                     .clearFocusOnDrag(focusManager)
                     .pointerInput(focusManager) {
                         detectTapGestures(onTap = { focusManager.clearFocus() })
                     },
-                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 16.dp),
             ) {
-                if (filtered.isEmpty()) {
-                    item {
-                        LoadStateBox(
-                            state = LoadState.Empty,
-                            emptyText = stringResource(
-                                if (query.isEmpty()) R.string.config_empty_subscribe else R.string.home_site_search_empty,
-                            ),
-                            errorText = "",
-                            retryText = "",
-                            emptyIconRes = R.drawable.ic_empty_record,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(160.dp),
-                        )
-                    }
-                }
-                itemsIndexed(filtered) { index, bean ->
-                    val selected = bean.key == currentSource?.key
-                    SettingsCard(
-                        position = when {
-                            filtered.size == 1 -> SettingsCardPosition.SINGLE
-                            index == 0 -> SettingsCardPosition.FIRST
-                            index == filtered.size - 1 -> SettingsCardPosition.LAST
-                            else -> SettingsCardPosition.MIDDLE
-                        },
-                        modifier = Modifier.padding(bottom = if (index == filtered.lastIndex) 0.dp else 2.dp),
-                        color = MaterialTheme.colorScheme.surfaceBright,
-                    ) {
-                        SettingsOptionRow(
-                            title = bean.name ?: bean.key.orEmpty(),
-                            selected = selected,
-                            onClick = {
-                                if (!selected) {
-                                    vm.switchSource(bean)
-                                }
-                                dismissAnimated()
-                            },
-                        )
-                    }
-                }
-                item {
-                    SettingsGroup(title = null, modifier = Modifier.padding(top = 20.dp)) {
-                        SettingsCard(
-                            position = SettingsCardPosition.SINGLE,
-                            color = MaterialTheme.colorScheme.surfaceBright,
-                        ) {
-                            SettingsRow(
-                                title = stringResource(R.string.settings_config_manage),
-                                onClick = {
-                                    dismissAnimated()
-                                    ConfigManageActivity.start(context)
-                                },
+                LazyColumn(
+                    state = listState,
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(bottom = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    if (visible.isEmpty() && query.isNotEmpty()) {
+                        item {
+                            LoadStateBox(
+                                state = LoadState.Empty,
+                                emptyText = stringResource(R.string.home_site_search_empty),
+                                errorText = "",
+                                retryText = "",
+                                emptyIconRes = R.drawable.ic_empty_record,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(160.dp),
                             )
                         }
                     }
+                    items(visible.chunked(perRow)) { row ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(2.dp),
+                        ) {
+                            row.forEachIndexed { index, bean ->
+                                val selected = bean.key == currentSource?.key
+                                SiteSourceCard(
+                                    name = bean.name?.takeIf { it.isNotEmpty() } ?: bean.key.orEmpty(),
+                                    selected = selected,
+                                    dotOnLeft = index == 0,
+                                    shape = if (perRow == 2) {
+                                        if (index == 0) SiteCardShapeLeft else SiteCardShapeRight
+                                    } else {
+                                        SiteCardShapeSingle
+                                    },
+                                    onClick = {
+                                        if (!selected) {
+                                            vm.switchSource(bean)
+                                        }
+                                        dismissAnimated()
+                                    },
+                                    modifier = Modifier.weight(1f),
+                                )
+                            }
+                            if (row.size < perRow) {
+                                Spacer(modifier = Modifier.weight(1f))
+                            }
+                        }
+                    }
+                }
+            }
+            SettingsGroup(
+                title = null,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 16.dp),
+            ) {
+                SettingsCard(
+                    position = SettingsCardPosition.SINGLE,
+                    color = MaterialTheme.colorScheme.surfaceBright,
+                ) {
+                    SettingsRow(
+                        title = stringResource(R.string.settings_config_manage),
+                        onClick = {
+                            dismissAnimated()
+                            ConfigManageActivity.start(context)
+                        },
+                    )
                 }
             }
         }
@@ -595,6 +773,43 @@ fun HomePage(
             selected = searchSources.pickedKeys,
             onApplySelection = { SearchSourcesState.applySelection(it) },
             onDismiss = { showSearchSettings = false },
+        )
+    }
+
+    if (extDialog) {
+        TextEditDialog(
+            title = stringResource(R.string.home_site_ext),
+            initialText = extValue,
+            placeholder = stringResource(R.string.home_site_ext_hint),
+            singleLine = false,
+            fieldHeight = 132.dp,
+            onDismiss = { extDialog = false },
+            onConfirm = { text ->
+                extDialog = false
+                val bean = currentSource ?: return@TextEditDialog
+                bean.ext = text
+                SiteExt.set(bean.key, text)
+                extValue = text
+                Toast.makeText(context, context.getString(R.string.toast_site_ext_saved), Toast.LENGTH_SHORT).show()
+                vm.reload()
+            },
+        )
+    }
+
+    if (proxyUrlDialog) {
+        TextEditDialog(
+            title = stringResource(R.string.settings_proxy_url),
+            initialText = SiteProxy.configuredUrl(),
+            placeholder = SiteProxy.DEFAULT_URL,
+            onDismiss = { proxyUrlDialog = false },
+            onConfirm = { text ->
+                proxyUrlDialog = false
+                SiteProxy.setConfiguredUrl(text)
+                SiteProxy.apply(currentSource)
+                proxyOn = SiteProxy.isEnabled(currentSource)
+                Toast.makeText(context, context.getString(R.string.toast_proxy_url_saved), Toast.LENGTH_SHORT).show()
+                vm.reload()
+            },
         )
     }
 
