@@ -38,6 +38,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.github.avbox.osc.R
+import com.github.avbox.osc.net.SearchSettings
+import com.github.avbox.osc.ui.components.CapsuleSegmentedButton
+import com.github.avbox.osc.ui.components.SegmentOption
+import com.github.avbox.osc.ui.components.SegmentStyle
 import com.github.avbox.osc.ui.components.SettingsIconBadge
 import com.github.avbox.osc.ui.components.clearFocusOnDrag
 import com.github.avbox.osc.ui.page.ManageActionIcon
@@ -55,6 +59,8 @@ internal fun SearchIdleContent(
     onSearch: (String) -> Unit,
     onClearHistory: () -> Unit,
     onRemoveHistory: (String) -> Unit,
+    scope: SearchSettings.SearchScope,
+    onScopeChange: (SearchSettings.SearchScope) -> Unit,
 ) {
     val incognito = UiSettingsState.config.incognito
     val focusManager = LocalFocusManager.current
@@ -64,7 +70,12 @@ internal fun SearchIdleContent(
             .verticalScroll(rememberScrollState())
             .clearFocusOnDrag(focusManager),
     ) {
-        Spacer(Modifier.height(topPad - 20.dp))
+        Spacer(Modifier.height(topPad + 8.dp))
+        SearchScopeSelector(
+            scope = scope,
+            onScopeChange = onScopeChange,
+        )
+        Spacer(Modifier.height(12.dp))
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -249,5 +260,55 @@ internal fun SearchIdleContent(
                 }
             }
         }
+    }
+}
+
+@Composable
+internal fun SearchScopeSelector(
+    scope: SearchSettings.SearchScope,
+    onScopeChange: (SearchSettings.SearchScope) -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 12.dp, end = 12.dp),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            SettingsIconBadge(R.drawable.ic_pref_search_threads, stringResource(R.string.search_scope_title))
+            Spacer(modifier = Modifier.width(12.dp))
+            Text(
+                text = stringResource(R.string.search_scope_title),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.weight(1f),
+            )
+        }
+        CapsuleSegmentedButton(
+            options = listOf(
+                SegmentOption(
+                    label = stringResource(R.string.search_scope_all),
+                    value = SearchSettings.SearchScope.All,
+                ),
+                SegmentOption(
+                    label = stringResource(R.string.search_scope_current),
+                    value = SearchSettings.SearchScope.Current,
+                ),
+                SegmentOption(
+                    label = stringResource(R.string.search_scope_selected),
+                    value = SearchSettings.SearchScope.Selected,
+                ),
+            ),
+            selectedValue = scope,
+            onOptionSelected = onScopeChange,
+            style = SegmentStyle.Separated,
+            containerColor = MaterialTheme.colorScheme.surfaceBright,
+            pressMorph = true,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp),
+        )
     }
 }
