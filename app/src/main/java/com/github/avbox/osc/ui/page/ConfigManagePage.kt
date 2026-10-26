@@ -57,7 +57,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import android.app.Activity
 import android.content.Intent
-import com.github.avbox.osc.ui.activity.MainActivity
+import com.github.avbox.osc.ui.MainActivity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -363,7 +363,7 @@ fun ConfigManageScreen(onNavigateBack: () -> Unit) {
                             )
                             (ctx as? Activity)?.finish()
                         }
-                        val inUse = if (mIsVod) {
+                        val inUse = if (isVod) {
                             item.url == activeUrl || HistoryHelper.isApiLineSourceOf(item.url, activeUrl)
                         } else {
                             !liveFollow && (
@@ -385,14 +385,14 @@ fun ConfigManageScreen(onNavigateBack: () -> Unit) {
                                     // 已经在这个接口上，再点一次就是“用这个接口去看”，直接回首页宫格
                                     goHome()
                                 } else {
-                                    vm.requestSwitch(item, mIsVod)
+                                    vm.requestSwitch(item, isVod)
                                 }
                             },
                             onLongClick = { vm.longPressSelect(value) },
                             onCheckedChange = { checked ->
                                 if (checked) {
-                                    vm.requestSwitch(item, mIsVod)
-                                } else if (!mIsVod) {
+                                    vm.requestSwitch(item, isVod)
+                                } else if (!isVod) {
                                     vm.followLiveNow()
                                 } else {
                                     goHome()
