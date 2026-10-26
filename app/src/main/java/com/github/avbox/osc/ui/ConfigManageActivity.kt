@@ -80,7 +80,7 @@ class ConfigManageActivity : BaseActivity() {
             folderPickLauncher.launch(null)
         } catch (th: Throwable) {
             folderPickCallback = null
-            LOG.e("ConfigManageActivity", th)
+            AppLog.e("ConfigManageActivity", th)
             Toast.makeText(this, getString(R.string.toast_local_tree_denied), Toast.LENGTH_LONG).show()
         }
     }
