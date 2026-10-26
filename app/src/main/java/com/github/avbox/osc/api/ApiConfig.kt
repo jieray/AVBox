@@ -21,6 +21,7 @@ import com.github.avbox.osc.util.AES
 import com.github.avbox.osc.util.AdBlocker
 import com.github.avbox.osc.util.DefaultConfig
 import com.github.avbox.osc.util.KVKeys
+import com.github.avbox.osc.util.SiteProxy
 import com.github.avbox.osc.util.HeaderGuard
 import com.github.avbox.osc.util.HistoryHelper
 import com.github.avbox.osc.util.KV
@@ -106,11 +107,23 @@ class ApiConfig private constructor() {
     }
 
     suspend fun loadConfig(useCache: Boolean): String? {
-        return configLoader.loadConfig(useCache)
+        // 拉在线订阅不属于任何站点，先摘掉站点代理，避免上个站点的代理越界作用到订阅拉取上
+        SiteProxy.suspendInfra()
+        return try {
+            configLoader.loadConfig(useCache)
+        } finally {
+            SiteProxy.resumeInfra()
+        }
     }
 
     suspend fun loadLiveConfig(useCache: Boolean): String? {
-        return configLoader.loadLiveConfig(useCache)
+        SiteProxy.suspendInfra()
+        return try {
+            configLoader.loadLiveConfig(useCache)
+        } finally {
+            SiteProxy.resumeInfra()
+        }
+    }
     }
 
     fun refreshConfigIfChanged(onChanged: (String, String) -> Unit) {
@@ -303,6 +316,8 @@ class ApiConfig private constructor() {
         ConfigApplier.applyDoh(infoJson)
         AppLog.i("echo-api-config-----------load")
         ConfigApplier.applyAds(infoJson)
+        // 订阅源自身的 proxy 规则（loadProxyRules）可能清空代理，这里按当前站点再应用一次
+        SiteProxy.apply(getHomeSourceBean())
     }
 
     private fun loadDefaultConfig() {
@@ -813,6 +828,8 @@ class ApiConfig private constructor() {
     fun setSourceBean(sourceBean: SourceBean) {
         this.homeSource = sourceBean
         KV.put(KVKeys.HOME_API, sourceBean.key)
+        // 站点级代理：开启的站点临时起全局代理，未开启的站点关掉
+        SiteProxy.apply(sourceBean)
     }
 
     fun setDefaultParse(parseBean: ParseBean) {
