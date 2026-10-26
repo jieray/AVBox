@@ -11,6 +11,16 @@ sys.dont_write_bytecode = True
 
 PLUGIN_DOWNLOAD_TIMEOUT = 20
 
+def setSiteProxy(url):
+    # Java 侧 SiteProxy 同步当前站点代理地址;空串表示关闭
+    try:
+        from base.localProxy import setSiteProxy as _set
+        return _set(url)
+    except Exception as e:
+        print('setSiteProxy failed: ' + str(e))
+        return ''
+
+
 def createFile(file_path):
     if os.path.exists(file_path) is False:
         os.makedirs(file_path)
