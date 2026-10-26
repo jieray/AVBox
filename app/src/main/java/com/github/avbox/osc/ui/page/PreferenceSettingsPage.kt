@@ -43,6 +43,8 @@ import com.github.avbox.osc.util.DanmuSettingsState
 import com.github.avbox.osc.util.LanguageManager
 import com.github.avbox.osc.util.SearchSettingsState
 import com.github.avbox.osc.util.restartApp
+import com.github.avbox.osc.api.ApiConfig
+import com.github.avbox.osc.util.SiteProxy
 import kotlin.math.roundToInt
 
 @Composable
@@ -55,6 +57,7 @@ fun PreferenceSettingsScreen(onNavigateBack: () -> Unit) {
     var sliderBuffer by remember(playbackConfig.bufferTimes) { mutableStateOf(playbackConfig.bufferTimes) }
     var sliderThreads by remember(searchConfig.searchThreads) { mutableStateOf(searchConfig.searchThreads) }
     var danmuApiDialog by remember { mutableStateOf(false) }
+    var proxyUrlDialog by remember { mutableStateOf(false) }
 
     val listState = rememberScrollState()
     AppTopBarScaffold(
@@ -187,6 +190,14 @@ fun PreferenceSettingsScreen(onNavigateBack: () -> Unit) {
                     )
                 }
                 SettingsCard(SettingsCardPosition.MIDDLE) {
+                    SettingsRow(
+                        title = stringResource(R.string.settings_proxy_url),
+                        leadingIconRes = R.drawable.ic_proxy,
+                        valueText = state.proxyUrl.ifEmpty { stringResource(R.string.common_not_set) },
+                        onClick = { proxyUrlDialog = true },
+                    )
+                }
+                SettingsCard(SettingsCardPosition.MIDDLE) {
                     SettingsSliderRow(
                         title = stringResource(R.string.settings_long_press_speed),
                         leadingIconRes = R.drawable.ic_pref_long_press_speed,
@@ -248,6 +259,20 @@ fun PreferenceSettingsScreen(onNavigateBack: () -> Unit) {
             onConfirm = { text ->
                 DanmuSettingsState.api = text
                 danmuApiDialog = false
+            },
+        )
+    }
+
+    if (proxyUrlDialog) {
+        TextEditDialog(
+            title = stringResource(R.string.settings_proxy_url),
+            initialText = state.proxyUrl,
+            onDismiss = { proxyUrlDialog = false },
+            onConfirm = { text ->
+                SiteProxy.setConfiguredUrl(text)
+                SiteProxy.apply(ApiConfig.get().getHomeSourceBean())
+                vm.refresh()
+                proxyUrlDialog = false
             },
         )
     }
