@@ -67,29 +67,29 @@ See https://kotl.in/gradle/agp-built-in-kotlin for more details.
 
 
 > Task :quickjs:preBuild UP-TO-DATE
-> Task :libs:backdrop:preBuild UP-TO-DATE
 > Task :quickjs:preReleaseBuild UP-TO-DATE
 > Task :app:preBuild UP-TO-DATE
 > Task :app:preReleaseBuild UP-TO-DATE
+> Task :libs:backdrop:preBuild UP-TO-DATE
 > Task :libs:backdrop:preReleaseBuild UP-TO-DATE
-> Task :quickjs:mergeReleaseJniLibFolders
-> Task :libs:backdrop:mergeReleaseJniLibFolders
 > Task :app:mergeReleaseJniLibFolders
+> Task :libs:backdrop:mergeReleaseJniLibFolders
+> Task :quickjs:mergeReleaseJniLibFolders
 > Task :quickjs:mergeReleaseNativeLibs NO-SOURCE
 > Task :libs:backdrop:mergeReleaseNativeLibs NO-SOURCE
-> Task :libs:backdrop:copyReleaseJniLibsProjectOnly
 > Task :quickjs:copyReleaseJniLibsProjectOnly
-> Task :libs:backdrop:prepareReleaseArtProfile
+> Task :libs:backdrop:copyReleaseJniLibsProjectOnly
 > Task :quickjs:prepareReleaseArtProfile
+> Task :libs:backdrop:prepareReleaseArtProfile
 > Task :quickjs:checkKotlinGradlePluginConfigurationErrors SKIPPED
 > Task :libs:backdrop:checkKotlinGradlePluginConfigurationErrors SKIPPED
-> Task :libs:backdrop:generateReleaseResources FROM-CACHE
 > Task :quickjs:generateReleaseResources FROM-CACHE
+> Task :libs:backdrop:generateReleaseResources FROM-CACHE
 > Task :quickjs:packageReleaseResources FROM-CACHE
 > Task :libs:backdrop:packageReleaseResources FROM-CACHE
-> Task :app:buildKotlinToolingMetadata
-> Task :libs:backdrop:processReleaseNavigationResources FROM-CACHE
 > Task :quickjs:processReleaseNavigationResources FROM-CACHE
+> Task :libs:backdrop:processReleaseNavigationResources FROM-CACHE
+> Task :app:buildKotlinToolingMetadata
 > Task :pyramid:generateReleasePythonJniLibs
 > Task :pyramid:preBuild UP-TO-DATE
 > Task :pyramid:preReleaseBuild UP-TO-DATE
@@ -99,37 +99,40 @@ See https://kotl.in/gradle/agp-built-in-kotlin for more details.
 > Task :pyramid:prepareReleaseArtProfile
 > Task :pyramid:findReleasePythonCommand
 > Task :pyramid:extractReleasePythonBuildPackages
-> Task :app:checkReleaseDuplicateClasses
-> Task :libs:backdrop:parseReleaseLocalResources FROM-CACHE
-> Task :quickjs:parseReleaseLocalResources FROM-CACHE
-> Task :quickjs:generateReleaseRFile FROM-CACHE
-> Task :libs:backdrop:generateReleaseRFile FROM-CACHE
-> Task :quickjs:compileReleaseKotlin FROM-CACHE
-> Task :quickjs:javaPreCompileRelease FROM-CACHE
-> Task :quickjs:compileReleaseJavaWithJavac NO-SOURCE
-> Task :quickjs:mergeReleaseGeneratedProguardFiles
-> Task :quickjs:exportReleaseConsumerProguardFiles
-> Task :libs:backdrop:compileReleaseKotlin FROM-CACHE
-> Task :quickjs:bundleLibCompileToJarRelease
-> Task :libs:backdrop:javaPreCompileRelease FROM-CACHE
-> Task :libs:backdrop:compileReleaseJavaWithJavac NO-SOURCE
-> Task :libs:backdrop:mergeReleaseGeneratedProguardFiles
-> Task :app:mergeReleaseNativeLibs
-> Task :libs:backdrop:exportReleaseConsumerProguardFiles
-> Task :libs:backdrop:bundleLibCompileToJarRelease
-> Task :app:mergeReleaseArtProfile
-> Task :quickjs:writeReleaseAarMetadata
-> Task :libs:backdrop:writeReleaseAarMetadata
-> Task :quickjs:extractDeepLinksRelease FROM-CACHE
-> Task :libs:backdrop:extractDeepLinksRelease FROM-CACHE
-> Task :libs:backdrop:processReleaseManifest FROM-CACHE
-> Task :quickjs:processReleaseManifest FROM-CACHE
 
 > Task :pyramid:installReleasePythonRequirements
 Chaquopy: Installing for arm64-v8a
 Looking in indexes: https://repo.huaweicloud.com/repository/pypi/simple/, https://chaquo.com/pypi-13.1
 Processing ./wheels/jsonpath-0.54-py3-none-any.whl
+Collecting lxml
+  Downloading https://chaquo.com/pypi-13.1/lxml/lxml-5.3.0-0-cp310-cp310-android_24_arm64_v8a.whl (1.4 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.4/1.4 MB 2.3 MB/s  0:00:01
 
+> Task :libs:backdrop:parseReleaseLocalResources FROM-CACHE
+> Task :app:checkReleaseDuplicateClasses
+> Task :quickjs:parseReleaseLocalResources FROM-CACHE
+> Task :libs:backdrop:generateReleaseRFile FROM-CACHE
+> Task :quickjs:generateReleaseRFile FROM-CACHE
+> Task :quickjs:compileReleaseKotlin FROM-CACHE
+> Task :quickjs:javaPreCompileRelease FROM-CACHE
+> Task :quickjs:compileReleaseJavaWithJavac NO-SOURCE
+> Task :quickjs:mergeReleaseGeneratedProguardFiles
+> Task :libs:backdrop:compileReleaseKotlin FROM-CACHE
+> Task :libs:backdrop:javaPreCompileRelease FROM-CACHE
+> Task :libs:backdrop:compileReleaseJavaWithJavac NO-SOURCE
+> Task :libs:backdrop:mergeReleaseGeneratedProguardFiles
+> Task :quickjs:exportReleaseConsumerProguardFiles
+> Task :libs:backdrop:exportReleaseConsumerProguardFiles
+> Task :quickjs:bundleLibCompileToJarRelease
+> Task :libs:backdrop:bundleLibCompileToJarRelease
+> Task :app:mergeReleaseNativeLibs
+> Task :quickjs:writeReleaseAarMetadata
+> Task :libs:backdrop:writeReleaseAarMetadata
+> Task :quickjs:extractDeepLinksRelease FROM-CACHE
+> Task :app:mergeReleaseArtProfile
+> Task :libs:backdrop:extractDeepLinksRelease FROM-CACHE
+> Task :quickjs:processReleaseManifest FROM-CACHE
+> Task :libs:backdrop:processReleaseManifest FROM-CACHE
 > Task :quickjs:mapReleaseSourceSetPaths
 > Task :quickjs:compileReleaseLibraryResources FROM-CACHE
 > Task :libs:backdrop:mapReleaseSourceSetPaths
@@ -142,76 +145,76 @@ Processing ./wheels/jsonpath-0.54-py3-none-any.whl
 > Task :quickjs:mergeReleaseAssets
 > Task :libs:backdrop:generateReleaseAssets UP-TO-DATE
 > Task :libs:backdrop:mergeReleaseAssets
-> Task :app:stripReleaseDebugSymbols
 > Task :quickjs:checkReleaseAarMetadata
 > Task :quickjs:stripReleaseDebugSymbols NO-SOURCE
 > Task :quickjs:copyReleaseJniLibsProjectAndLocalJars
+> Task :app:stripReleaseDebugSymbols
 > Task :quickjs:extractDeepLinksForAarRelease FROM-CACHE
 > Task :libs:backdrop:checkReleaseAarMetadata
 > Task :libs:backdrop:stripReleaseDebugSymbols NO-SOURCE
 > Task :libs:backdrop:copyReleaseJniLibsProjectAndLocalJars
 > Task :libs:backdrop:extractDeepLinksForAarRelease FROM-CACHE
-> Task :app:expandReleaseL8ArtProfileWildcards FROM-CACHE
-> Task :app:extractReleaseNativeSymbolTables FROM-CACHE
-> Task :quickjs:extractReleaseAnnotations FROM-CACHE
-> Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
-> Task :app:generateReleaseBuildConfig FROM-CACHE
-> Task :app:mergeReleaseNativeDebugMetadata
-> Task :quickjs:mergeReleaseConsumerProguardFiles
-> Task :app:generateReleaseResources FROM-CACHE
-> Task :quickjs:prepareLintJarForPublish
-> Task :libs:backdrop:extractReleaseAnnotations FROM-CACHE
-> Task :libs:backdrop:mergeReleaseConsumerProguardFiles
-> Task :libs:backdrop:prepareLintJarForPublish
-> Task :app:packageReleaseResources FROM-CACHE
-> Task :libs:backdrop:mergeReleaseJavaResource
-> Task :quickjs:mergeReleaseJavaResource
-> Task :app:javaPreCompileRelease FROM-CACHE
-> Task :quickjs:syncReleaseLibJars FROM-CACHE
-> Task :libs:backdrop:syncReleaseLibJars FROM-CACHE
-> Task :app:mapReleaseSourceSetPaths
-> Task :app:createReleaseCompatibleScreenManifests
-> Task :app:extractDeepLinksRelease FROM-CACHE
-> Task :quickjs:bundleReleaseAar
-> Task :app:extractProguardFiles
-> Task :app:mergeReleaseStartupProfile
-> Task :app:generateReleaseAssets UP-TO-DATE
-> Task :libs:backdrop:bundleReleaseAar
-> Task :quickjs:mergeReleaseResources FROM-CACHE
-> Task :quickjs:verifyReleaseResources FROM-CACHE
-> Task :quickjs:assembleRelease
-> Task :libs:backdrop:mergeReleaseResources FROM-CACHE
-> Task :app:extractReleaseVersionControlInfo
-> Task :libs:backdrop:verifyReleaseResources FROM-CACHE
-> Task :libs:backdrop:assembleRelease
-> Task :app:collectReleaseDependencies
-> Task :app:sdkReleaseDependencyData
-> Task :app:validateSigningRelease
-> Task :app:writeReleaseAppMetadata
-> Task :app:writeReleaseSigningConfigVersions
 
 > Task :pyramid:installReleasePythonRequirements
-Collecting lxml
-  Downloading https://chaquo.com/pypi-13.1/lxml/lxml-5.3.0-0-cp310-cp310-android_24_arm64_v8a.whl (1.4 MB)
-     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.4/1.4 MB 2.4 MB/s  0:00:00
 Collecting ujson
   Downloading https://chaquo.com/pypi-13.1/ujson/ujson-5.11.0-0-cp310-cp310-android_24_arm64_v8a.whl (79 kB)
 Collecting pyquery==2.0.2
   Downloading https://repo.huaweicloud.com/repository/pypi/packages/63/74/187449a465d4cbf008ffdebe3396d702ea34ee2d34d9c1d71d13e31a5dd7/pyquery-2.0.2-py3-none-any.whl (23 kB)
 Collecting requests
   Downloading https://repo.huaweicloud.com/repository/pypi/packages/a0/f4/c67b0b3f1b9245e8d266f0f112c500d50e5b4e83cb6f3b71b6528104182a/requests-2.34.2-py3-none-any.whl (73 kB)
+
+> Task :app:expandReleaseL8ArtProfileWildcards FROM-CACHE
+> Task :app:extractReleaseNativeSymbolTables FROM-CACHE
+> Task :quickjs:extractReleaseAnnotations FROM-CACHE
+> Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :app:generateReleaseBuildConfig FROM-CACHE
+> Task :app:generateReleaseResources FROM-CACHE
+> Task :app:packageReleaseResources FROM-CACHE
+> Task :libs:backdrop:extractReleaseAnnotations FROM-CACHE
+> Task :quickjs:mergeReleaseConsumerProguardFiles
+> Task :quickjs:prepareLintJarForPublish
+> Task :app:javaPreCompileRelease FROM-CACHE
+> Task :app:mapReleaseSourceSetPaths
+> Task :app:createReleaseCompatibleScreenManifests
+> Task :app:extractDeepLinksRelease FROM-CACHE
+> Task :app:extractProguardFiles
+> Task :app:mergeReleaseStartupProfile
+> Task :app:generateReleaseAssets UP-TO-DATE
+> Task :quickjs:mergeReleaseJavaResource
+> Task :quickjs:syncReleaseLibJars FROM-CACHE
+> Task :quickjs:bundleReleaseAar
+> Task :app:extractReleaseVersionControlInfo
+> Task :quickjs:mergeReleaseResources FROM-CACHE
+> Task :quickjs:verifyReleaseResources FROM-CACHE
+> Task :quickjs:assembleRelease
+> Task :libs:backdrop:mergeReleaseConsumerProguardFiles
+> Task :libs:backdrop:prepareLintJarForPublish
+> Task :libs:backdrop:mergeReleaseJavaResource
+> Task :libs:backdrop:syncReleaseLibJars FROM-CACHE
+> Task :libs:backdrop:bundleReleaseAar
+> Task :app:mergeReleaseNativeDebugMetadata
+> Task :libs:backdrop:mergeReleaseResources FROM-CACHE
+> Task :app:collectReleaseDependencies
+> Task :libs:backdrop:verifyReleaseResources FROM-CACHE
+> Task :libs:backdrop:assembleRelease
+> Task :app:sdkReleaseDependencyData
+> Task :app:validateSigningRelease
+> Task :app:writeReleaseAppMetadata
+> Task :app:writeReleaseSigningConfigVersions
+
+> Task :pyramid:installReleasePythonRequirements
 Collecting cachetools
   Downloading https://repo.huaweicloud.com/repository/pypi/packages/4f/bd/bd8f45fbdf05ce06dbadda61bf0a09844bb0cf0a048d7f5c4a368d437e24/cachetools-7.2.5-py3-none-any.whl (19 kB)
 Collecting pycryptodome
   Downloading https://chaquo.com/pypi-13.1/pycryptodome/pycryptodome-3.21.0-0-cp310-cp310-android_24_arm64_v8a.whl (1.6 MB)
-     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.6/1.6 MB 4.8 MB/s  0:00:00
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.6/1.6 MB 4.5 MB/s  0:00:00
 Collecting beautifulsoup4
   Downloading https://repo.huaweicloud.com/repository/pypi/packages/88/c6/92fcd42f1ba33e1184263f25bfabf3d27c383410470f169e4b8163bf9c17/beautifulsoup4-4.15.0-py3-none-any.whl (109 kB)
 Collecting cssselect<=1.4.99,>=1.2.0 (from pyquery==2.0.2)
   Downloading https://repo.huaweicloud.com/repository/pypi/packages/20/0c/7bb51e3acfafd16c48875bf3db03607674df16f5b6ef8d056586af7e2b8b/cssselect-1.4.0-py3-none-any.whl (18 kB)
 Collecting chaquopy-libxml2>=2.9.8 (from lxml)
   Downloading https://chaquo.com/pypi-13.1/chaquopy-libxml2/chaquopy_libxml2-2.9.8-2-py3-none-android_21_arm64_v8a.whl (773 kB)
-     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 773.4/773.4 kB 5.3 MB/s  0:00:00
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 773.4/773.4 kB 5.0 MB/s  0:00:00
 Collecting chaquopy-libxslt>=1.1.32 (from lxml)
   Downloading https://chaquo.com/pypi-13.1/chaquopy-libxslt/chaquopy_libxslt-1.1.32-2-py3-none-android_21_arm64_v8a.whl (178 kB)
 Collecting chaquopy-libcxx>=180000 (from ujson)
@@ -250,17 +253,22 @@ Successfully installed beautifulsoup4-4.15.0 cachetools-7.2.5 certifi-2026.10.23
 > Task :pyramid:mapReleaseSourceSetPaths
 > Task :pyramid:compileReleaseLibraryResources FROM-CACHE
 > Task :pyramid:processReleaseJavaRes NO-SOURCE
-> Task :pyramid:generateReleaseAssets UP-TO-DATE
 > Task :pyramid:bundleLibRuntimeToJarRelease
+> Task :pyramid:generateReleaseAssets UP-TO-DATE
 > Task :app:mergeReleaseResources FROM-CACHE
 > Task :app:processReleaseNavigationResources FROM-CACHE
 > Task :app:parseReleaseLocalResources FROM-CACHE
-> Task :pyramid:generateReleasePythonMiscAssets
 > Task :app:generateReleaseRFile FROM-CACHE
+> Task :pyramid:generateReleasePythonMiscAssets
 > Task :pyramid:generateReleasePythonRequirementsAssets
+> Task :app:compileReleaseNavigationResources FROM-CACHE
+> Task :app:checkReleaseAarMetadata
 > Task :pyramid:generateReleasePythonSourceAssets
 > Task :pyramid:generateReleasePythonBuildAssets
 > Task :pyramid:mergeReleaseAssets
+> Task :app:processReleaseMainManifest FROM-CACHE
+> Task :app:processReleaseManifest FROM-CACHE
+> Task :app:processReleaseManifestForPackage FROM-CACHE
 > Task :pyramid:checkReleaseAarMetadata
 > Task :pyramid:extractDeepLinksForAarRelease FROM-CACHE
 
@@ -268,64 +276,26 @@ Successfully installed beautifulsoup4-4.15.0 cachetools-7.2.5 certifi-2026.10.23
 Unable to strip the following libraries, packaging them as they are: libchaquopy_java.so, libcrypto_chaquopy.so, libcrypto_python.so, libpython3.10.so, libpython3.so, libsqlite3_chaquopy.so, libsqlite3_python.so, libssl_chaquopy.so, libssl_python.so. Run with --info option to learn more.
 
 > Task :pyramid:extractReleaseAnnotations FROM-CACHE
-> Task :pyramid:mergeReleaseConsumerProguardFiles
-> Task :app:compileReleaseNavigationResources FROM-CACHE
-> Task :app:checkReleaseAarMetadata
 > Task :pyramid:copyReleaseJniLibsProjectAndLocalJars
+> Task :pyramid:mergeReleaseConsumerProguardFiles
 > Task :pyramid:prepareLintJarForPublish
 > Task :pyramid:mergeReleaseResources FROM-CACHE
-> Task :pyramid:verifyReleaseResources FROM-CACHE
 > Task :pyramid:mergeReleaseJavaResource
+> Task :pyramid:verifyReleaseResources FROM-CACHE
 > Task :pyramid:syncReleaseLibJars FROM-CACHE
-> Task :app:processReleaseMainManifest FROM-CACHE
-> Task :app:processReleaseManifest FROM-CACHE
-> Task :app:processReleaseManifestForPackage FROM-CACHE
 > Task :app:processReleaseResources FROM-CACHE
 > Task :app:mergeReleaseAssets
+> Task :app:compressReleaseAssets
 > Task :pyramid:bundleReleaseAar
 > Task :pyramid:assembleRelease
-> Task :app:compressReleaseAssets
 > Task :app:kspReleaseKotlin
 > Task :app:compileReleaseKotlin
-e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/net/SearchSettings.kt:30:23 Conflicting declarations:
-val KEY_EMPTY_SOURCES: String
-e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/net/SearchSettings.kt:69:23 Conflicting declarations:
-val KEY_EMPTY_SOURCES: String
-e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/net/SearchSettings.kt:72:26 Overload resolution ambiguity between candidates:
-val KEY_EMPTY_SOURCES: String
-val KEY_EMPTY_SOURCES: String
-e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/net/SearchSettings.kt:80:38 Overload resolution ambiguity between candidates:
-val KEY_EMPTY_SOURCES: String
-val KEY_EMPTY_SOURCES: String
-e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/net/SearchSettings.kt:80:69 Overload resolution ambiguity between candidates:
-val KEY_EMPTY_SOURCES: String
-val KEY_EMPTY_SOURCES: String
-e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/SearchScreen.kt:45:34 Conflicting import: imported name 'SearchSettingsState' is ambiguous.
-e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/SearchScreen.kt:59:34 Conflicting import: imported name 'SearchSettingsState' is ambiguous.
-e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/components/SearchSettingsSheet.kt:61:5 Unresolved reference 'LaunchedEffect'.
-e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/SettingsPage.kt:184:41 Unresolved reference 'autoOpenPage'.
-e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/util/DetailIntent.kt:7:32 Unresolved reference 'activity'.
-e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/util/DetailIntent.kt:47:25 Unresolved reference 'DetailActivity'.
-e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/util/DetailIntent.kt:47:47 Cannot infer type for type parameter 'T'. Specify it explicitly.
-e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/util/DetailIntent.kt:47:47 Candidate 'val <T> KClass<T>.java: Class<T>' is inapplicable because of a receiver type mismatch.
-e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/util/DetailIntent.kt:48:14 Unresolved reference 'putExtra'.
 e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/util/VodImages.kt:53:24 Unresolved reference 'HttpClients'.
 e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/util/VodImages.kt:54:29 Unresolved reference 'HttpClients'.
 e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/util/VodImages.kt:109:17 Unresolved reference 'AppLog'.
-e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/catvod/crawler/HtmlSpider.kt:5:32 Unresolved reference 'activity'.
-e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/catvod/crawler/HtmlSpider.kt:136:9 Unresolved reference 'HtmlActivity'.
-e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/catvod/crawler/HtmlSpider.kt:143:23 Unresolved reference 'HtmlActivity'.
-e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/catvod/crawler/HtmlSpider.kt:149:13 Cannot infer type for value parameter 'value'. Specify it explicitly.
-e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/catvod/crawler/HtmlSpider.kt:157:21 Unresolved reference 'HtmlActivity'.
-e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/catvod/crawler/HtmlSpider.kt:158:17 Unresolved reference 'HtmlActivity'.
-e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/catvod/crawler/HtmlSpider.kt:159:17 Unresolved reference 'HtmlActivity'.
-e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/catvod/crawler/HtmlSpider.kt:161:49 Unresolved reference 'HtmlActivity'.
-e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/catvod/crawler/HtmlSpider.kt:161:69 Cannot infer type for type parameter 'T'. Specify it explicitly.
-e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/catvod/crawler/HtmlSpider.kt:161:69 Candidate 'val <T> KClass<T>.java: Class<T>' is inapplicable because of a receiver type mismatch.
-e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/catvod/crawler/HtmlSpider.kt:162:26 Unresolved reference 'addFlags'.
 
 > Task :app:compileReleaseKotlin FAILED
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/gradle-1793045315101.json
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/gradle-1793045717119.json
 
 [Incubating] Problems report is available at: file:///home/runner/work/AVBox/AVBox/build/reports/problems/problems-report.html
 
@@ -334,11 +304,10 @@ FAILURE: Build failed with an exception.
 * What went wrong:
 Execution failed for task ':app:compileReleaseKotlin' (registered by plugin 'org.jetbrains.kotlin.android').
 > A failure occurred while executing org.jetbrains.kotlin.compilerRunner.btapi.BuildToolsApiCompilationWork
-   > Kotlin compiler: REDECLARATION
+   > Kotlin compiler: UNRESOLVED_REFERENCE
        Kotlin compiler error
-         Conflicting declarations:
-         val KEY_EMPTY_SOURCES: String
-         Location: /home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/net/SearchSettings.kt:30
+         Unresolved reference 'HttpClients'.
+         Location: /home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/util/VodImages.kt:53
 
 * Try:
 > Run with --info or --debug option to get more log output.
@@ -373,6 +342,36 @@ org.gradle.api.tasks.TaskExecutionException: Execution failed for task ':app:com
 	at org.gradle.internal.operations.CurrentBuildOperationRef.with(CurrentBuildOperationRef.java:85)
 	at org.gradle.execution.plan.DefaultPlanExecutor$ExecutorWorker.execute(DefaultPlanExecutor.java:475)
 	at org.gradle.execution.plan.DefaultPlanExecutor$ExecutorWorker.run(DefaultPlanExecutor.java:392)
+	at org.gradle.execution.plan.DefaultPlanExecutor.process(DefaultPlanExecutor.java:118)
+	at org.gradle.execution.DefaultBuildWorkExecutor.executePlan(DefaultBuildWorkExecutor.java:143)
+	at org.gradle.execution.DefaultBuildWorkExecutor.displayOrExecutePlan(DefaultBuildWorkExecutor.java:128)
+	at org.gradle.execution.DefaultBuildWorkExecutor$1.call(DefaultBuildWorkExecutor.java:79)
+	at org.gradle.execution.DefaultBuildWorkExecutor$1.call(DefaultBuildWorkExecutor.java:75)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:210)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:205)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:67)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:60)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:167)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:60)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:54)
+	at org.gradle.execution.DefaultBuildWorkExecutor.execute(DefaultBuildWorkExecutor.java:75)
+	at org.gradle.internal.build.DefaultBuildLifecycleController.lambda$executeTasks$0(DefaultBuildLifecycleController.java:323)
+	at org.gradle.internal.model.StateTransitionController.doTransition(StateTransitionController.java:324)
+	at org.gradle.internal.model.StateTransitionController.lambda$tryTransition$0(StateTransitionController.java:235)
+	at org.gradle.internal.work.DefaultSynchronizer.withLock(DefaultSynchronizer.java:45)
+	at org.gradle.internal.model.StateTransitionController.tryTransition(StateTransitionController.java:235)
+	at org.gradle.internal.build.DefaultBuildLifecycleController.executeTasks(DefaultBuildLifecycleController.java:314)
+	at org.gradle.internal.build.DefaultBuildWorkGraphController$DefaultBuildWorkGraph.runWork(DefaultBuildWorkGraphController.java:207)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.lambda$runAndReleaseLocks$0(DefaultWorkerLeaseService.java:296)
+	at org.gradle.internal.work.ResourceLockStatistics$1.measure(ResourceLockStatistics.java:43)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.runAndReleaseLocks(DefaultWorkerLeaseService.java:294)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.withLocksAcquired(DefaultWorkerLeaseService.java:290)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.withLocks(DefaultWorkerLeaseService.java:282)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.runAsWorkerThread(DefaultWorkerLeaseService.java:132)
+	at org.gradle.composite.internal.DefaultBuildController.doRun(DefaultBuildController.java:182)
+	at org.gradle.composite.internal.DefaultBuildController$BuildOpRunnable.lambda$run$0(DefaultBuildController.java:199)
+	at org.gradle.internal.operations.CurrentBuildOperationRef.with(CurrentBuildOperationRef.java:85)
+	at org.gradle.composite.internal.DefaultBuildController$BuildOpRunnable.run(DefaultBuildController.java:199)
 	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:65)
 	at org.gradle.internal.concurrent.AbstractManagedExecutor$1.run(AbstractManagedExecutor.java:47)
 Caused by: org.gradle.workers.internal.DefaultWorkerExecutor$WorkExecutionException: A failure occurred while executing org.jetbrains.kotlin.compilerRunner.btapi.BuildToolsApiCompilationWork
@@ -493,9 +492,8 @@ Caused by: org.gradle.workers.internal.DefaultWorkerExecutor$WorkExecutionExcept
 	at org.gradle.internal.execution.steps.IdentifyStep.execute(IdentifyStep.java:38)
 	at org.gradle.internal.execution.impl.DefaultExecutionEngine$1.execute(DefaultExecutionEngine.java:68)
 	at org.gradle.api.internal.tasks.execution.DefaultTaskNodeExecutor.doExecute(DefaultTaskNodeExecutor.java:364)
-	... 25 more
-Caused by: org.jetbrains.kotlin.gradle.tasks.CompilationErrorException: Conflicting declarations:
-val KEY_EMPTY_SOURCES: String
+	... 55 more
+Caused by: org.jetbrains.kotlin.gradle.tasks.CompilationErrorException: Unresolved reference 'HttpClients'.
 	at org.jetbrains.kotlin.gradle.plugin.diagnostics.DefaultCompilerDiagnosticsProblemsReporter.reportCompilerMessage(CompilerDiagnosticsProblemsReporter.kt:63)
 	at org.jetbrains.kotlin.compilerRunner.btapi.ProblemsApiCompilerMessageRenderer.replayTo(ProblemsApiCompilerMessageRenderer.kt:88)
 	at org.jetbrains.kotlin.compilerRunner.btapi.BuildToolsApiCompilationWork.execute(BuildToolsApiCompilationWork.kt:251)
@@ -538,5 +536,5 @@ You can use '--warning-mode all' to show the individual deprecation warnings and
 
 For more on this, please refer to https://docs.gradle.org/9.8.2/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
 
-BUILD FAILED in 1m 34s
+BUILD FAILED in 1m 27s
 144 actionable tasks: 84 executed, 60 from cache
