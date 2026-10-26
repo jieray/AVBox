@@ -146,6 +146,12 @@ import com.github.avbox.osc.util.SiteExt
 import com.github.avbox.osc.util.SiteProxy
 import com.kyant.capsule.ContinuousCapsule
 import kotlin.math.roundToInt
+import com.github.avbox.osc.ui.SiteCardShapeLeft
+import com.github.avbox.osc.ui.SiteCardShapeRight
+import com.github.avbox.osc.ui.SiteCardShapeSingle
+import com.github.avbox.osc.ui.SiteKind
+import com.github.avbox.osc.ui.SiteSourceCard
+import com.github.avbox.osc.ui.siteKindOf
 
 private val HomeSourceCapsuleMaxWidth = 240.dp
 
