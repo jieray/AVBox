@@ -81,7 +81,7 @@ object SortDiskCache {
             if (xml == null || xml.videoList.isNullOrEmpty()) return null
             xml
         } catch (e: Throwable) {
-            LOG.i("echo--sortDiskCache-load-fail: " + e.javaClass.simpleName)
+            AppLog.i("echo--sortDiskCache-load-fail: " + e.javaClass.simpleName)
             null
         }
     }
