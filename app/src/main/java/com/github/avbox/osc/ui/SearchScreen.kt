@@ -54,6 +54,7 @@ import com.github.avbox.osc.ui.components.rememberVodCardMenuState
 import com.github.avbox.osc.ui.page.jumpToSearch
 import com.github.avbox.osc.ui.page.openVodCardOrDetail
 import kotlinx.coroutines.delay
+import com.github.avbox.osc.net.SearchSettings
 
 private const val SuggestDebounceMs = 120L
 
