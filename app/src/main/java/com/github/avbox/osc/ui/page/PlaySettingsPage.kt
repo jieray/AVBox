@@ -192,13 +192,22 @@ fun PlaySettingsScreen(onNavigateBack: () -> Unit) {
                         onCheckedChange = { PlaybackSettingsState.preferAac = it },
                     )
                 }
-                SettingsCard(SettingsCardPosition.LAST) {
+                SettingsCard(SettingsCardPosition.MIDDLE) {
                     SettingsSwitchRow(
                         title = stringResource(R.string.settings_music_page),
                         leadingIconRes = R.drawable.ic_music_page,
                         subtitle = stringResource(R.string.settings_music_page_subtitle),
                         checked = UiSettingsState.config.musicAutoOpenPage,
                         onCheckedChange = { UiSettingsState.musicAutoOpenPage = it },
+                    )
+                }
+                SettingsCard(SettingsCardPosition.LAST) {
+                    SettingsSwitchRow(
+                        title = stringResource(R.string.settings_play_auto_landscape),
+                        leadingIconRes = R.drawable.ic_player_rotate,
+                        subtitle = stringResource(R.string.settings_play_auto_landscape_subtitle),
+                        checked = state.autoLandscape,
+                        onCheckedChange = { vm.put(KVKeys.PLAY_AUTO_LANDSCAPE, it) },
                     )
                 }
             }
