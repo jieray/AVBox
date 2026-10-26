@@ -22,6 +22,7 @@ import com.github.avbox.osc.util.HistoryHelper
 import com.github.avbox.osc.util.HomeSettings
 import com.github.avbox.osc.util.KV
 import com.github.avbox.osc.util.AppLog
+import com.github.avbox.osc.util.LocalScriptSource
 import com.github.avbox.osc.util.LanguageManager
 import kotlin.coroutines.resume
 import kotlinx.coroutines.CoroutineScope
@@ -124,6 +125,7 @@ class HomeViewModel : ViewModel(), TmdbPosterCache {
     private var loadingSourceKey: String? = null
     private var configReloading = false
     private var watchdogJob: Job? = null
+    private var watchdogGrace = 0
 
     private val _activeSortId = MutableStateFlow<String?>(null)
     val activeSortId: StateFlow<String?> = _activeSortId.asStateFlow()
@@ -222,6 +224,56 @@ class HomeViewModel : ViewModel(), TmdbPosterCache {
         loadHome()
     }
 
+    /** 刷新站点列表与订阅源列表（不重载首页内容） */
+    fun refreshSources() {
+        sources.value = ApiConfig.get().getSwitchSourceBeanList()
+        refreshSubscribes()
+    }
+
+    /**
+     * 列表刷新：真正重新读取当前订阅源。
+     *
+     * 之前只做 sources.value = ApiConfig.get().getSwitchSourceBeanList()，
+     * 读的是内存里已解析好的那份——站点管理改动的是磁盘上的 lscript.json，
+     * 内存那份没重新解析，所以点刷新看不出任何变化。
+     * 这里对本地脚本源重新扫描目录并 parseJson，才拿得到增删后的站点。
+     */
+    fun refreshSourceList() {
+        val url = KV.get(KVKeys.API_URL, "")
+        if (!LocalScriptSource.isLocalScript(url)) {
+            refreshSources()
+            return
+        }
+        configReloading = true
+        scope.launch(Dispatchers.IO) {
+            val json = try {
+                LocalScriptSource.buildJson(url)
+            } catch (th: Throwable) {
+                LOG.e("HomeViewModel", th)
+                null
+            }
+            launch(Dispatchers.Main) {
+                if (!json.isNullOrEmpty()) {
+                    SourceRuntimeState.clearRuntimeCache()
+                    try {
+                        ApiConfig.get().parseJson(url, json)
+                    } catch (th: Throwable) {
+                        LOG.e("HomeViewModel", th)
+                    }
+                }
+                refreshSources()
+                // 当前首页站点若已被移除，顺带切到新的首页站点，避免停在空站点上
+                val current = currentSource.value
+                if (current == null || current.key.isNullOrEmpty() ||
+                    sources.value.none { it.key == current.key }
+                ) {
+                    loadHome()
+                }
+                configReloading = false
+            }
+        }
+    }
+
     fun isSubscribeDisabled(item: SubscribeSource): Boolean = BootGuard.isDisabledSource(item.url)
 
     fun switchSubscribe(item: SubscribeSource) {
@@ -248,6 +300,7 @@ class HomeViewModel : ViewModel(), TmdbPosterCache {
         sortsLoaded.value = false
         _sortLoadFailed.value = false
         sortRetried = false
+        watchdogGrace = 0
         listRetried.clear()
         _rec.value = Rec(PartitionState.Loading, emptyList())
         _partitions.value = emptyList()
@@ -260,6 +313,13 @@ class HomeViewModel : ViewModel(), TmdbPosterCache {
     }
 
     private fun onHomeLoadTimeout() {
+        // 切换在线接口时，配置下载/解析本身就可能超过 20s。此时报“加载失败”属于误判：
+        // 数据随后到达又会自动显示，用户只会看到一个假失败。重载中额外给几次宽限。
+        if (configReloading && watchdogGrace < 3) {
+            watchdogGrace++
+            armWatchdog()
+            return
+        }
         val recLoading = _rec.value.state == PartitionState.Loading
         val partitionLoading = _partitions.value.any { it.state == PartitionState.Loading }
         if (!recLoading && !partitionLoading) return
@@ -295,6 +355,7 @@ class HomeViewModel : ViewModel(), TmdbPosterCache {
         _rec.value = Rec(PartitionState.Loading, emptyList())
         sortsLoaded.value = false
         _pageLoading.value = true
+        watchdogGrace = 0
         armWatchdog()
         sortViewModel.getSort(key, HomeSettings.layout == HomeSettings.HomeLayout.Horizontal)
     }
