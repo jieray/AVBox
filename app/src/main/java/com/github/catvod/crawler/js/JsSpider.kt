@@ -699,7 +699,7 @@ class JsSpider : Spider {
                     "export const encrypt = empty;\n" +
                     "export const decrypt = empty;"
 
-        private const val CALL_TIMEOUT_MS: Long = 120_000
+        private const val CALL_TIMEOUT_MS: Long = 30_000
 
         private const val SPIDER_STRING_CODE: String = "import * as spider from '%s'\n\n" +
                 "if (!globalThis.__JS_SPIDER__) {\n" +
