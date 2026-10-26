@@ -25,7 +25,7 @@ class JsLoader {
     private var recentKey: String = ""
 
     private val clearGeneration: AtomicLong = AtomicLong(0)
-    private val creationLock: Any = Any()
+    private val creationLocks = java.util.concurrent.ConcurrentHashMap<String, Any>()
     private val destroyExecutor = Executors.newSingleThreadExecutor { r -> Thread(r, "js-loader-destroy") }
 
     fun clear() {
@@ -143,7 +143,7 @@ class JsLoader {
             return it
         }
         val generation = clearGeneration.get()
-        synchronized(creationLock) {
+        synchronized(creationLocks.computeIfAbsent(requireNotNull(key)) { Any() }) {
             val cached = spiders[key]
             if (cached != null) {
                 Log.i("JSLoader", "echo-getSpider cached " + key)
