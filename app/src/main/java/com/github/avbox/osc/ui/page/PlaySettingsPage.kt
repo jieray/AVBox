@@ -39,6 +39,8 @@ import com.github.avbox.osc.ui.components.SettingsSwitchRow
 import com.github.avbox.osc.ui.components.TopBarActionBox
 import com.github.avbox.osc.ui.settings.UiSettingsState
 import kotlin.math.roundToInt
+import com.github.avbox.osc.util.KV
+import com.github.avbox.osc.util.KVKeys
 
 private const val DecodeHard = "硬解码" // i18n: keep
 private const val DecodeSoft = "软解码" // i18n: keep
@@ -48,6 +50,7 @@ fun PlaySettingsScreen(onNavigateBack: () -> Unit) {
     val config = PlaybackSettingsState.config
     val context = LocalContext.current
     var showPrewarmWarning by remember { mutableStateOf(false) }
+    var autoLandscape by remember { mutableStateOf(KV.get(KVKeys.PLAY_AUTO_LANDSCAPE, KVKeys.PLAY_AUTO_LANDSCAPE_DEFAULT)) }
     var sliderPreloadDuration by remember(config.preloadDuration) { mutableStateOf(config.preloadDuration) }
     var sliderCacheSize by remember(config.exoCacheSizeMb) { mutableStateOf(config.exoCacheSizeMb) }
 
@@ -206,8 +209,11 @@ fun PlaySettingsScreen(onNavigateBack: () -> Unit) {
                         title = stringResource(R.string.settings_play_auto_landscape),
                         leadingIconRes = R.drawable.ic_player_rotate,
                         subtitle = stringResource(R.string.settings_play_auto_landscape_subtitle),
-                        checked = state.autoLandscape,
-                        onCheckedChange = { vm.put(KVKeys.PLAY_AUTO_LANDSCAPE, it) },
+                        checked = autoLandscape,
+                        onCheckedChange = {
+                            KV.put(KVKeys.PLAY_AUTO_LANDSCAPE, it)
+                            autoLandscape = it
+                        },
                     )
                 }
             }
