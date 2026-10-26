@@ -90,4 +90,14 @@
     <string name="tab_following">追劇</string>
     <string name="tab_mine">我的</string>
     <string name="following_empty">暫無追劇</string>
+    <string name="settings_proxy_url">代理地址</string>
+    <string name="settings_proxy_url_hint">留空则使用 http://127.0.0.1:2080</string>
+    <string name="home_proxy">代理</string>
+    <string name="toast_proxy_on">已開啟代理</string>
+    <string name="toast_proxy_off">已關閉代理</string>
+    <string name="config_add_local_script">添加腳本本地地址</string>
+    <string name="config_site_manage">站點管理</string>
+    <string name="config_local_script_hint">填寫存放 py/js 腳本的目錄</string>
+    <string name="toast_local_script_empty">該目錄下沒有找到 py/js 腳本</string>
+    <string name="toast_local_script_added">已添加，共 %1$d 個腳本</string>
 </resources>
