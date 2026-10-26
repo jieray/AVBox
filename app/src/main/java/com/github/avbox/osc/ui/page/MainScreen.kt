@@ -71,8 +71,8 @@ import com.github.avbox.osc.ui.components.AVBoxAlertDialog
 import com.github.avbox.osc.ui.components.LocalTopBarGlassPauseRecording
 import com.github.avbox.osc.ui.components.LocalSheetDismissThen
 import com.github.avbox.osc.ui.components.LocalSheetHost
-import com.github.avbox.osc.ui.components.SheetHost
 import com.github.avbox.osc.ui.components.SheetHostState
+import com.github.avbox.osc.ui.components.TopLayerSheetHost
 import com.github.avbox.osc.ui.currentWindowWidthClass
 import com.github.avbox.osc.ui.navbar.FloatingNavBar
 import com.github.avbox.osc.ui.navbar.GlassTabItem
@@ -83,6 +83,7 @@ import com.github.avbox.osc.ui.theme.LiquidGlassState
 import com.github.avbox.osc.util.ActivityStack
 import com.github.avbox.osc.boot.BootGuard
 import com.github.avbox.osc.util.HomeSettings
+import com.github.avbox.osc.util.HomeTabRequest
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import kotlinx.coroutines.launch
@@ -134,6 +135,14 @@ private fun MainContent() {
     val scope = rememberCoroutineScope()
     val pagerState = rememberPagerState(pageCount = { AppTab.entries.size })
     val homeViewModel: HomeViewModel = viewModel()
+    val homeTabToken = HomeTabRequest.token
+
+    LaunchedEffect(homeTabToken) {
+        if (homeTabToken > 0) {
+            withFrameNanos { }
+            pagerState.scrollToPage(0)
+        }
+    }
 
     LaunchedEffect(Unit) {
         if (homeViewModel.defaultLiveLaunched) return@LaunchedEffect
@@ -400,7 +409,7 @@ private fun MainContent() {
                     }
                 }
             }
-            SheetHost(sheetHost)
+            TopLayerSheetHost(sheetHost)
         }
     }
 }
