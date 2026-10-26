@@ -375,6 +375,14 @@ class ConfigManageViewModel(
         }
     }
 
+    /** 站点管理改动后强制重新加载当前订阅源（本地脚本源会重新扫描目录） */
+    fun reloadActiveSource(vod: Boolean) {
+        val url = if (vod) KV.get(KVKeys.API_URL, "") else KV.get(KVKeys.LIVE_API_URL, "")
+        if (url.isEmpty()) return
+        val item = SubscribeSource(url, url)
+        if (vod) applyVodSource(item) else applyLiveSource(item)
+    }
+
     fun enableAndSwitch() {
         val pending = _pendingSwitch.value ?: return
         _pendingSwitch.value = null
