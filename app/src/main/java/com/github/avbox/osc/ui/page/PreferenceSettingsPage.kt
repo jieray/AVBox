@@ -58,6 +58,7 @@ fun PreferenceSettingsScreen(onNavigateBack: () -> Unit) {
     var sliderThreads by remember(searchConfig.searchThreads) { mutableStateOf(searchConfig.searchThreads) }
     var danmuApiDialog by remember { mutableStateOf(false) }
     var proxyUrlDialog by remember { mutableStateOf(false) }
+    var proxyUrlText by remember { mutableStateOf(SiteProxy.configuredUrl()) }
 
     val listState = rememberScrollState()
     AppTopBarScaffold(
@@ -193,7 +194,7 @@ fun PreferenceSettingsScreen(onNavigateBack: () -> Unit) {
                     SettingsRow(
                         title = stringResource(R.string.settings_proxy_url),
                         leadingIconRes = R.drawable.ic_proxy,
-                        valueText = state.proxyUrl.ifEmpty { stringResource(R.string.common_not_set) },
+                        valueText = proxyUrlText.ifEmpty { stringResource(R.string.common_not_set) },
                         onClick = { proxyUrlDialog = true },
                     )
                 }
@@ -266,12 +267,12 @@ fun PreferenceSettingsScreen(onNavigateBack: () -> Unit) {
     if (proxyUrlDialog) {
         TextEditDialog(
             title = stringResource(R.string.settings_proxy_url),
-            initialText = state.proxyUrl,
+            initialText = proxyUrlText,
             onDismiss = { proxyUrlDialog = false },
             onConfirm = { text ->
                 SiteProxy.setConfiguredUrl(text)
-                SiteProxy.apply(ApiConfig.get().getHomeSourceBean())
-                vm.refresh()
+                proxyUrlText = text
+                SiteProxy.apply(ApiConfig.get().homeSourceBean())
                 proxyUrlDialog = false
             },
         )
