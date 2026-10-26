@@ -1,6 +1,7 @@
 package com.github.avbox.osc.util
 
-import com.github.avbox.osc.util.AppLog as LOG
+import com.github.avbox.osc.util.AppLog
+import com.github.avbox.osc.net.HttpClients
 
 import coil3.ImageLoader
 import coil3.SingletonImageLoader

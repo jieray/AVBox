@@ -7,7 +7,7 @@ import android.os.Bundle
 import com.github.avbox.osc.ui.DetailActivity
 import com.github.avbox.osc.util.AppContextHolder
 import com.github.avbox.osc.util.ActivityStack
-import com.github.avbox.osc.util.AppLog as LOG
+import com.github.avbox.osc.util.AppLog
 
 /**
  * 详情页唤起兼容层：对齐影视TV / TVBox 系扩展脚本的调用约定。
