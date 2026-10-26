@@ -7,7 +7,7 @@ import requests
 from lxml import etree
 from abc import abstractmethod, ABCMeta
 from importlib.util import spec_from_file_location, module_from_spec
-from base.localProxy import Proxy
+from base.localProxy import Proxy, proxies
 
 class Spider(metaclass=ABCMeta):
     _instance = None
@@ -117,7 +117,7 @@ class Spider(metaclass=ABCMeta):
     def fetch(self, url, headers=None, cookies=None, params=None, timeout=15, verify=True, stream=False,
               allow_redirects=True):
         rsp = requests.get(url, params=params, cookies=cookies, headers=headers, timeout=timeout, verify=verify,
-                           stream=stream, allow_redirects=allow_redirects)
+                           stream=stream, allow_redirects=allow_redirects, proxies=proxies())
         rsp.encoding = 'utf-8'
         return rsp
 
@@ -132,12 +132,12 @@ class Spider(metaclass=ABCMeta):
         if headers:
             headers = {k: self._clean_header_value(v) for k, v in headers.items()}
 
-        rsp = requests.post(url, params=params, data=data, json=json, cookies=cookies, headers=headers, timeout=timeout, verify=verify, stream=stream, allow_redirects=allow_redirects)
+        rsp = requests.post(url, params=params, data=data, json=json, cookies=cookies, headers=headers, timeout=timeout, verify=verify, stream=stream, allow_redirects=allow_redirects, proxies=proxies())
         rsp.encoding = 'utf-8'
         return rsp
 
     def postJson(self, url, json, headers=None, cookies=None):
-        rsp = requests.post(url, json=json, headers=headers, cookies=cookies)
+        rsp = requests.post(url, json=json, headers=headers, cookies=cookies, proxies=proxies())
         rsp.encoding = 'utf-8'
         return rsp
 
