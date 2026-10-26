@@ -51,6 +51,13 @@ class SourceBean {
             field = safeString(value)
         }
 
+    // 站点级代理：空或不存在=不代理；填任意值=启用代理（"proxy" 等占位值取设置里的代理地址）
+    var proxy: String? = null
+        get() = safeString(field)
+        set(value) {
+            field = safeString(value)
+        }
+
     var categories: ArrayList<String>? = null
 
     var playerType: Int = 0
