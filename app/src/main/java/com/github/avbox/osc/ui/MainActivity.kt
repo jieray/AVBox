@@ -1,5 +1,6 @@
 package com.github.avbox.osc.ui
 
+import android.content.Intent
 import android.content.res.Configuration
 import android.os.Build
 import com.github.avbox.osc.ui.theme.enableTransparentEdgeToEdge
@@ -11,11 +12,22 @@ import com.github.avbox.osc.player.PlaybackService
 import com.github.avbox.osc.ui.page.MainScreen
 import com.github.avbox.osc.ui.theme.AVBoxTheme
 import com.github.avbox.osc.ui.theme.AppThemeState
+import com.github.avbox.osc.util.HomeTabRequest
 import com.github.avbox.osc.util.PermissionHelper
 
 private const val PREWARM_ON_RESUME_DELAY_MS = 2000L
 
 class MainActivity : BaseActivity() {
+
+    companion object {
+        const val EXTRA_GO_HOME = "go_home"
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        if (intent.getBooleanExtra(EXTRA_GO_HOME, false)) HomeTabRequest.request()
+    }
 
     override fun shouldRefreshAutoSize(): Boolean = true
 
@@ -39,6 +51,7 @@ class MainActivity : BaseActivity() {
     }
 
     override fun init() {
+        if (intent?.getBooleanExtra(EXTRA_GO_HOME, false) == true) HomeTabRequest.request()
         enableTransparentEdgeToEdge()
         applyStatusBarAppearance()
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R && !PermissionHelper.isStorageGranted(this)) {
