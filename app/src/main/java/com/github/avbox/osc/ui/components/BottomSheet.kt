@@ -47,6 +47,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.zIndex
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChanged
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -253,6 +254,21 @@ fun SheetHostScaffold(content: @Composable () -> Unit) {
             content()
             SheetHost(host)
         }
+    }
+}
+
+/**
+ * 弹层统一挂在页面内容之上的最顶层。
+ *
+ * 之前弹层只是"排在内容之后"，一旦同级还有别的兄弟（侧栏、悬浮条、
+ * 毛玻璃 backdrop 之类）在它之后绘制，弹窗就会被盖住，看起来像是
+ * "跑到了首页下面"。这里显式抬到 zIndex 最高，
+ * 保证无论同层还有谁，弹层永远在最上面。
+ */
+@Composable
+fun TopLayerSheetHost(state: SheetHostState) {
+    Box(modifier = Modifier.fillMaxSize().zIndex(Float.MAX_VALUE)) {
+        SheetHost(state)
     }
 }
 
