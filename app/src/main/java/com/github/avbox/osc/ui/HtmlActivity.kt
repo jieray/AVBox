@@ -11,7 +11,6 @@ import android.view.ViewGroup
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import com.github.avbox.osc.net.OkGoHelper
 import com.github.avbox.osc.util.KV
 import com.github.avbox.osc.util.AppLog
 import org.json.JSONObject
@@ -126,7 +125,7 @@ class HtmlActivity : Activity() {
                 @Suppress("DEPRECATION")
                 view.evaluateJavascript(script, null)
             } catch (th: Throwable) {
-                LOG.e(TAG, th)
+                AppLog.e(TAG, th)
                 settle(null)
             }
         }
@@ -175,7 +174,7 @@ class HtmlActivity : Activity() {
         try {
             req.callback.invoke(result)
         } catch (th: Throwable) {
-            LOG.e(TAG, th)
+            AppLog.e(TAG, th)
         }
         mainHandler.removeCallbacks(idleClose)
         mainHandler.postDelayed(idleClose, IDLE_CLOSE_MS)
@@ -190,7 +189,7 @@ class HtmlActivity : Activity() {
         try {
             left?.callback?.invoke(null)
         } catch (th: Throwable) {
-            LOG.e(TAG, th)
+            AppLog.e(TAG, th)
         }
         try {
             finish()
@@ -210,7 +209,7 @@ class HtmlActivity : Activity() {
         try {
             assets.open(name).bufferedReader().use { it.readText() }
         } catch (th: Throwable) {
-            LOG.e(TAG, th)
+            AppLog.e(TAG, th)
             null
         }
 
@@ -255,7 +254,7 @@ class HtmlActivity : Activity() {
 
         @JavascriptInterface
         fun log(msg: String?) {
-            LOG.i("$TAG[${req.siteKey}]: ${msg ?: ""}")
+            AppLog.i("$TAG[${req.siteKey}]: ${msg ?: ""}")
         }
 
         /** 同步请求：走 App 网络栈，站点代理开关对它同样生效 */
@@ -263,7 +262,7 @@ class HtmlActivity : Activity() {
         fun req(url: String?, headers: String?, method: String?, body: String?): String {
             if (url.isNullOrEmpty()) return ""
             return try {
-                val client = OkGoHelper.getDefaultClient() ?: com.github.catvod.net.OkHttp.client()
+                val client = com.github.catvod.net.OkHttp.client()
                 val builder = okhttp3.Request.Builder().url(url)
                 if (!headers.isNullOrEmpty()) {
                     val h = JSONObject(headers)
@@ -282,7 +281,7 @@ class HtmlActivity : Activity() {
                 resp.close()
                 text
             } catch (th: Throwable) {
-                LOG.e(TAG, th)
+                AppLog.e(TAG, th)
                 ""
             }
         }
@@ -300,7 +299,7 @@ class HtmlActivity : Activity() {
             try {
                 KV.put(varKey(req.siteKey, key), value ?: "")
             } catch (th: Throwable) {
-                LOG.e(TAG, th)
+                AppLog.e(TAG, th)
             }
         }
 
