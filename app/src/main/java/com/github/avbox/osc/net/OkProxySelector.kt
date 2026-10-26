@@ -12,6 +12,18 @@ import java.util.concurrent.CopyOnWriteArrayList
 
 class OkProxySelector : ProxySelector() {
 
+    /** 站点级代理规则的固定名称（SiteProxy 生成），用于做“基础设施请求豁免” */
+    val SITE_RULE_NAME = "site_proxy"
+
+    /**
+     * 拉取在线订阅 / 更新等基础设施请求时不走【站点代理】。
+     * 站点代理是为某个站点的爬虫临时开的，拉订阅源不属于任何站点，
+     * 继续沿用会让上一个站点的代理错误地作用于订阅拉取。
+     * 注意：只豁免站点代理规则，订阅自带的 proxy 规则不受影响。
+     */
+    @Volatile
+    var suspendSiteProxy: Boolean = false
+
     val proxy: MutableList<ProxyRule> = CopyOnWriteArrayList()
     private val system: ProxySelector? = ProxySelector.getDefault()
 
@@ -42,6 +54,7 @@ class OkProxySelector : ProxySelector() {
         val host = uri.host
         if ("127.0.0.1" == host || "localhost".equals(host, ignoreCase = true)) return fallback(uri)
         for (item in proxy) {
+            if (suspendSiteProxy && SITE_RULE_NAME == item.getName()) continue
             for (rule in item.getHosts()) {
                 if (rule == null) continue
                 if (containOrMatch(host, rule)) {
