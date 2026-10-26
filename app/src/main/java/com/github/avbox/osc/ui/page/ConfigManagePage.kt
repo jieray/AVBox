@@ -39,6 +39,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import com.github.avbox.osc.util.LocalScriptSource
+import java.io.File
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -53,6 +55,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import android.app.Activity
+import android.content.Intent
+import com.github.avbox.osc.ui.activity.MainActivity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -97,7 +102,9 @@ fun ConfigManageScreen(onNavigateBack: () -> Unit) {
     val vm: ConfigManageViewModel = viewModel(factory = ConfigManageViewModel.defaultFactory())
     var mode by rememberSaveable { mutableStateOf(ConfigMode.Vod) }
     var addDialogOpen by remember { mutableStateOf(false) }
+    var localScriptDialog by remember { mutableStateOf(false) }
     var repoSheetOpen by remember { mutableStateOf(false) }
+    var siteManageDir by rememberSaveable { mutableStateOf<String?>(null) }
     val vodItems by vm.vodItems.collectAsState()
     val liveItems by vm.liveItems.collectAsState()
     val activeUrl by vm.activeUrl.collectAsState()
@@ -150,6 +157,17 @@ fun ConfigManageScreen(onNavigateBack: () -> Unit) {
             noSourceText,
         )
     }
+    val siteDir = siteManageDir
+    if (siteDir != null) {
+        BackHandler { siteManageDir = null }
+        SiteManageScreen(
+            dir = siteDir,
+            onBack = { siteManageDir = null },
+            onReloadSource = { vm.reloadActiveSource(isVod) },
+        )
+        return
+    }
+
     AppTopBarScaffold(
         titleContent = {
             Text(
@@ -196,6 +214,18 @@ fun ConfigManageScreen(onNavigateBack: () -> Unit) {
                                 )
                             },
                         )
+                        val onlyLocal = selected.size == 1 &&
+                            LocalScriptSource.isLocalScript(parseSubscribe(selected.first()).url)
+                        if (onlyLocal) {
+                            ManageActionIcon(
+                                iconRes = R.drawable.ic_site_manage,
+                                contentDescription = stringResource(R.string.config_site_manage),
+                                enabled = true,
+                                onClick = {
+                                    siteManageDir = LocalScriptSource.path(parseSubscribe(selected.first()).url)
+                                },
+                            )
+                        }
                     }
                 } else {
                     Row(
@@ -218,6 +248,11 @@ fun ConfigManageScreen(onNavigateBack: () -> Unit) {
                                     stringResource(R.string.config_add_live_source)
                                 },
                                 onClick = { addDialogOpen = true },
+                            )
+                            TopBarActionBox(
+                                iconRes = R.drawable.ic_import,
+                                contentDescription = stringResource(R.string.config_add_local_script),
+                                onClick = { localScriptDialog = true },
                             )
                         }
                     }
@@ -314,6 +349,57 @@ fun ConfigManageScreen(onNavigateBack: () -> Unit) {
                             if (vodMode) url == activeUrl else !liveFollow && url == liveActiveUrl
                         }
                     }
+                    val cardContent: @Composable (String, Modifier) -> Unit = { value, cardModifier ->
+                        val item = parseSubscribe(value)
+                        val ctx = LocalContext.current
+                        val goHome: () -> Unit = {
+                            ctx.startActivity(
+                                Intent(ctx, MainActivity::class.java)
+                                    .putExtra(MainActivity.EXTRA_GO_HOME, true)
+                                    .addFlags(
+                                        Intent.FLAG_ACTIVITY_SINGLE_TOP or
+                                            Intent.FLAG_ACTIVITY_CLEAR_TOP
+                                    )
+                            )
+                            (ctx as? Activity)?.finish()
+                        }
+                        val inUse = if (mIsVod) {
+                            item.url == activeUrl || HistoryHelper.isApiLineSourceOf(item.url, activeUrl)
+                        } else {
+                            !liveFollow && (
+                                item.url == liveActiveUrl ||
+                                    HistoryHelper.isLiveApiLineSourceOf(item.url, liveActiveUrl)
+                                )
+                        }
+                        SubscribeCard(
+                            modifier = cardModifier,
+                            item = item,
+                            active = inUse,
+                            disabled = item.url in disabledUrls,
+                            manageMode = manageMode,
+                            selected = value in selected,
+                            onClick = {
+                                if (manageMode) {
+                                    vm.toggleSelected(value)
+                                } else if (inUse) {
+                                    // 已经在这个接口上，再点一次就是“用这个接口去看”，直接回首页宫格
+                                    goHome()
+                                } else {
+                                    vm.requestSwitch(item, mIsVod)
+                                }
+                            },
+                            onLongClick = { vm.longPressSelect(value) },
+                            onCheckedChange = { checked ->
+                                if (checked) {
+                                    vm.requestSwitch(item, mIsVod)
+                                } else if (!mIsVod) {
+                                    vm.followLiveNow()
+                                } else {
+                                    goHome()
+                                }
+                            },
+                        )
+                    }
                     LazyColumn(
                         state = rememberLazyListState(),
                         modifier = Modifier
@@ -341,42 +427,7 @@ fun ConfigManageScreen(onNavigateBack: () -> Unit) {
                                 )
                             }
                         }
-                        items(ordered, key = { "${m.name}#$it" }) { value ->
-                            val item = parseSubscribe(value)
-                            val inUse = if (vodMode) {
-                                item.url == activeUrl || HistoryHelper.isApiLineSourceOf(item.url, activeUrl)
-                            } else {
-                                !liveFollow && (
-                                    item.url == liveActiveUrl ||
-                                        HistoryHelper.isLiveApiLineSourceOf(item.url, liveActiveUrl)
-                                    )
-                            }
-                            SubscribeCard(
-                                modifier = Modifier.animateItem(),
-                                item = item,
-                                active = inUse,
-                                disabled = item.url in disabledUrls,
-                                manageMode = manageMode,
-                                selected = value in selected,
-                                onClick = {
-                                    if (manageMode) {
-                                        vm.toggleSelected(value)
-                                    } else {
-                                        vm.requestSwitch(item, vodMode)
-                                    }
-                                },
-                                onLongClick = {
-                                    vm.longPressSelect(value)
-                                },
-                                onCheckedChange = { checked ->
-                                    if (checked) {
-                                        vm.requestSwitch(item, vodMode)
-                                    } else if (!vodMode) {
-                                        vm.followLiveNow()
-                                    }
-                                },
-                            )
-                        }
+                        items(mOrdered, key = { "${m.name}#$it" }) { value -> cardContent(value, Modifier.animateItem()) }
                     }
                 }
             }
@@ -384,6 +435,27 @@ fun ConfigManageScreen(onNavigateBack: () -> Unit) {
     }
 
     val editing = editTarget
+    if (localScriptDialog) {
+        AddScriptDialog(
+            title = stringResource(R.string.config_add_local_script),
+            onDismiss = { localScriptDialog = false },
+            onSave = { name, path ->
+                localScriptDialog = false
+                if (path.isNotEmpty()) {
+                    val count = LocalScriptSource.count(path)
+                    if (count <= 0) {
+                        Toast.makeText(context, context.getString(R.string.toast_local_script_empty), Toast.LENGTH_LONG).show()
+                    } else if (vm.addLocalSource(name.ifBlank { File(path).name }, LocalScriptSource.SCHEME + path)) {
+                        Toast.makeText(context, context.getString(R.string.toast_local_script_added, count), Toast.LENGTH_LONG).show()
+                    }
+                }
+            },
+            onPickFolder = { onPicked ->
+                (context as? ConfigManageActivity)?.launchFolderPick { picked -> onPicked(picked) }
+            },
+        )
+    }
+
     if (addDialogOpen || editing != null) {
         AddSubscribeDialog(
             title = if (editing != null) {
@@ -617,6 +689,85 @@ private fun DisabledSourceTag() {
 }
 
 @Composable
+private fun AddScriptDialog(
+    title: String,
+    onDismiss: () -> Unit,
+    onSave: (String, String) -> Unit,
+    onPickFolder: (onPicked: (path: String) -> Unit) -> Unit,
+) {
+    var name by remember { mutableStateOf("") }
+    var path by remember { mutableStateOf("") }
+    AVBoxAlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = title,
+                    modifier = Modifier.weight(1f),
+                )
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .glassSurface(CircleShape, MaterialTheme.colorScheme.surfaceBright)
+                        .clickable {
+                            onPickFolder { picked ->
+                                path = picked
+                                if (name.isBlank()) name = File(picked).name
+                            }
+                        },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_file_choose),
+                        contentDescription = stringResource(R.string.config_pick_local),
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.size(22.dp),
+                    )
+                }
+            }
+        },
+        text = {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    label = { Text(stringResource(R.string.config_field_name)) },
+                )
+                Spacer(Modifier.height(12.dp))
+                OutlinedTextField(
+                    value = path,
+                    onValueChange = { path = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    label = { Text(stringResource(R.string.config_field_path)) },
+                    supportingText = {
+                        Text(stringResource(R.string.config_script_path_hint))
+                    },
+                )
+            }
+        },
+        confirmButton = {
+            val dismissThen = LocalSheetDismissThen.current
+            TextButton(
+                onClick = { dismissThen { onSave(name.trim(), path.trim()) } },
+                enabled = path.isNotBlank(),
+            ) { Text(stringResource(R.string.common_save)) }
+        },
+        dismissButton = {
+            val dismissThen = LocalSheetDismissThen.current
+            TextButton(onClick = { dismissThen { onDismiss() } }) {
+                Text(stringResource(R.string.common_cancel))
+            }
+        },
+    )
+}
+
+@Composable
 private fun AddSubscribeDialog(
     title: String,
     urlSupportingText: String,
@@ -697,6 +848,12 @@ private fun AddSubscribeDialog(
                 onClick = { dismissThen { onSave(name.trim(), url.trim()) } },
                 enabled = url.isNotBlank(),
             ) { Text(stringResource(R.string.common_save)) }
+        },
+        dismissButton = {
+            val dismissThen = LocalSheetDismissThen.current
+            TextButton(onClick = { dismissThen { onDismiss() } }) {
+                Text(stringResource(R.string.common_cancel))
+            }
         },
     )
 }
