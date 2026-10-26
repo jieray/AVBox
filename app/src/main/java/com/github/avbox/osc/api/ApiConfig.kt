@@ -124,7 +124,6 @@ class ApiConfig private constructor() {
             SiteProxy.resumeInfra()
         }
     }
-    }
 
     fun refreshConfigIfChanged(onChanged: (String, String) -> Unit) {
         configLoader.refreshIfChanged(onChanged)
