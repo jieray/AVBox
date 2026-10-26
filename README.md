@@ -3,9 +3,9 @@
 </div>
 
 <div align="center">
-  <img src="images/avbox.svg" width="120" alt="AVBox"/>
+  <img src="images/avbox.svg" width="120" alt="X-BOX"/>
   <br/>
-  <a href="https://t.me/github_AVBox"><img src="https://img.shields.io/badge/Telegram_AVBox_Group-26A5E4?logo=telegram&logoColor=white" alt="Telegram AVBox Group"/></a>
+  <a href="https://t.me/github_X-BOX"><img src="https://img.shields.io/badge/Telegram_X-BOX_Group-26A5E4?logo=telegram&logoColor=white" alt="Telegram X-BOX Group"/></a>
 </div>
 
 # 免责声明与用户协议
@@ -14,7 +14,7 @@
 
 ## 一、软件性质
 
-1. AVBox（AudioVideoBox）是一款开源的视频播放器框架，仅提供播放界面、源配置管理和本地播放能力。
+1. X-BOX（AudioVideoBox）是一款开源的视频播放器框架，仅提供播放界面、源配置管理和本地播放能力。
 2. 本软件默认状态下**不预置、不内置、不提供**任何影视内容、直播频道、节目单、订阅服务或第三方解析接口。
 3. 本软件开发者不参与任何内容的制作、上传、存储、分发或运营。
 
