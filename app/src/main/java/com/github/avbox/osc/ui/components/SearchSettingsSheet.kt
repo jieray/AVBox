@@ -43,6 +43,9 @@ import com.github.avbox.osc.R
 import com.github.avbox.osc.bean.SourceBean
 import com.github.avbox.osc.util.SearchSettingsState
 import com.github.avbox.osc.util.HomeSettings
+import com.github.avbox.osc.ui.SiteKind
+import com.github.avbox.osc.api.ApiConfig
+import com.github.avbox.osc.ui.siteKindOf
 
 @Composable
 fun SearchSettingsSheet(onDismiss: () -> Unit, onSelectionChanged: () -> Unit) {
