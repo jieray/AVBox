@@ -58,6 +58,7 @@ import com.github.avbox.osc.ui.components.SettingsOptionMenuRow
 import com.github.avbox.osc.ui.components.SettingsRow
 import com.github.avbox.osc.ui.settings.UiSettingsState
 import com.github.avbox.osc.util.DefaultConfig
+import com.github.avbox.osc.util.SiteProxy
 import com.github.avbox.osc.util.HistoryHelper
 import com.github.avbox.osc.util.SearchSettingsState
 import com.github.avbox.osc.util.SpiderStorageNotice
@@ -69,6 +70,38 @@ import kotlinx.coroutines.withContext
 private const val CACHE_SIZE_REFRESH_MIN_INTERVAL_MS = 60_000L
 
 data class SettingsState(
+    val playType: Int,
+    val playRender: Int,
+    val playScale: Int,
+    val exoDecode: String,
+    val anime4kTier: Anime4kTier,
+    val kernelPrewarm: Boolean,
+    val playTunnel: Boolean,
+    val preferAac: Boolean,
+    val musicPlayerPage: Boolean,
+    val autoSwitchLine: Boolean,
+    val m3u8Purify: Boolean,
+    val incognito: Boolean,
+    val hideStatusBar: Boolean,
+    val gestureControlDisabled: Boolean,
+    val navAnimationDisabled: Boolean,
+    val navLiveHidden: Boolean,
+    val collectColumns: Int,
+    val danmuOpen: Boolean,
+    val danmuApi: String,
+    val proxyUrl: String,
+    val defaultLoadLive: Boolean,
+    val historyNumIndex: Int,
+    val historyMerge: Boolean,
+    val searchThreads: Int,
+    val longPressSpeed: Int,
+    val bufferTimes: Int,
+    val preloadNextEpisode: Boolean,
+    val preloadDuration: Int,
+    val playCache: Boolean,
+    val exoCacheSizeMb: Int,
+    val autoLandscape: Boolean,
+    val dohIndex: Int,
     val cacheSizeText: String = "",
 )
 
@@ -131,6 +164,38 @@ class SettingsViewModel : ViewModel() {
     }
 
     private fun loadState(): SettingsState = SettingsState(
+        playType = KV.get(KVKeys.PLAY_TYPE, 2),
+        playRender = KV.get(KVKeys.PLAY_RENDER, 1),
+        playScale = KV.get(KVKeys.PLAY_SCALE, 0),
+        exoDecode = KV.get(KVKeys.EXO_DECODE, "硬解码"), // i18n: keep
+        anime4kTier = Anime4kTier.current(),
+        kernelPrewarm = KV.get(KVKeys.KERNEL_PREWARM, KVKeys.KERNEL_PREWARM_DEFAULT),
+        playTunnel = KV.get(KVKeys.PLAY_TUNNEL, false),
+        preferAac = KV.get(KVKeys.PLAY_PREFER_AAC, false),
+        musicPlayerPage = MusicSettings.autoOpenPage(),
+        autoSwitchLine = KV.get(KVKeys.AUTO_SWITCH_LINE, KVKeys.AUTO_SWITCH_LINE_DEFAULT),
+        m3u8Purify = KV.get(KVKeys.M3U8_PURIFY, false),
+        incognito = KV.get(KVKeys.INCOGNITO, false),
+        hideStatusBar = KV.get(KVKeys.HIDE_STATUS_BAR, false),
+        gestureControlDisabled = KV.get(KVKeys.GESTURE_CONTROL_DISABLED, false),
+        navAnimationDisabled = KV.get(KVKeys.NAV_ANIMATION_DISABLED, false),
+        navLiveHidden = KV.get(KVKeys.NAV_LIVE_HIDDEN, false),
+        collectColumns = KV.get(KVKeys.COLLECT_COLUMNS, 3),
+        danmuOpen = KV.get(KVKeys.DANMU_OPEN, true),
+        danmuApi = KV.get(KVKeys.DANMU_API, ""),
+        proxyUrl = SiteProxy.configuredUrl(),
+        defaultLoadLive = KV.get(KVKeys.DEFAULT_LOAD_LIVE, false),
+        historyNumIndex = KV.get(KVKeys.HISTORY_NUM, 0),
+        historyMerge = HistoryMerge.isEnabled(),
+        searchThreads = KV.get(KVKeys.SEARCH_THREADS, KVKeys.SEARCH_THREADS_DEFAULT),
+        longPressSpeed = KV.get(KVKeys.LONG_PRESS_SPEED, KVKeys.LONG_PRESS_SPEED_DEFAULT),
+        bufferTimes = KV.get(KVKeys.BUFFER_TIMES, KVKeys.BUFFER_TIMES_DEFAULT),
+        preloadNextEpisode = KV.get(KVKeys.PRELOAD_NEXT_EPISODE, false),
+        preloadDuration = KV.get(KVKeys.PRELOAD_DURATION, KVKeys.PRELOAD_DURATION_DEFAULT),
+        playCache = KV.get(KVKeys.PLAY_CACHE, false),
+        exoCacheSizeMb = KV.get(KVKeys.EXO_CACHE_SIZE_MB, KVKeys.EXO_CACHE_SIZE_MB_DEFAULT),
+        autoLandscape = KV.get(KVKeys.PLAY_AUTO_LANDSCAPE, KVKeys.PLAY_AUTO_LANDSCAPE_DEFAULT),
+        dohIndex = KV.get(KVKeys.DOH_URL, 0),
         cacheSizeText = cacheSizeText,
     )
 }
@@ -376,24 +441,44 @@ fun TextEditDialog(
     initialText: String,
     onDismiss: () -> Unit,
     onConfirm: (String) -> Unit,
+    placeholder: String? = null,
+    singleLine: Boolean = true,
+    fieldHeight: Dp = 0.dp,
 ) {
     var text by rememberSaveable { mutableStateOf(initialText) }
     AVBoxAlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(title) },
         text = {
+            val fieldModifier = Modifier.fillMaxWidth().then(
+                if (fieldHeight > 0.dp) {
+                    Modifier.height(fieldHeight).verticalScroll(rememberScrollState())
+                } else {
+                    Modifier
+                },
+            )
             OutlinedTextField(
                 value = text,
                 onValueChange = { text = it },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                placeholder = { Text(stringResource(R.string.dialog_api_url_hint)) },
+                modifier = fieldModifier,
+                singleLine = singleLine,
+                minLines = if (singleLine) 1 else 2,
+                maxLines = if (singleLine) 1 else if (fieldHeight > 0.dp) 8 else 2,
+                placeholder = {
+                    Text(placeholder ?: stringResource(R.string.dialog_api_url_hint))
+                },
             )
         },
         confirmButton = {
             val dismissThen = LocalSheetDismissThen.current
             TextButton(onClick = { dismissThen { onConfirm(text.trim()) } }) {
                 Text(stringResource(R.string.common_confirm))
+            }
+        },
+        dismissButton = {
+            val dismissThen = LocalSheetDismissThen.current
+            TextButton(onClick = { dismissThen { onDismiss() } }) {
+                Text(stringResource(R.string.common_cancel))
             }
         },
     )
