@@ -1,6 +1,8 @@
 package com.github.avbox.osc.net
 
 import com.github.avbox.osc.util.StringUtils
+import com.github.avbox.osc.util.KV
+import com.github.avbox.osc.util.KVKeys
 
 object SearchSettings {
 
