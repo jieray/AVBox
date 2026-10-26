@@ -44,13 +44,13 @@ object VodImages {
     }
 
     private fun picClient(): OkHttpClient = OkHttpClient.Builder()
-<<<<<<< _F_ours/app/src/main/java/com/github/tvbox/osc/ui/components/VodImages.kt
-        .apply { OkGoHelper.getDefaultClient()?.dns?.let { dns(it) } }
+        .apply {
+            dnsProvider?.invoke()?.let { dns(it) }
+            OkGoHelper.getDefaultClient()?.dns?.let { dns(it) }
+        }
+        // 宫格海报图走与爬虫同一套站点代理规则，否则开了代理图片仍直连
         .proxySelector(OkGoHelper.proxySelector())
         .proxyAuthenticator(OkGoHelper.proxyAuthenticator())
-=======
-        .apply { dnsProvider?.invoke()?.let { dns(it) } }
->>>>>>> _F_th/app/src/main/java/com/github/avbox/osc/util/VodImages.kt
         .cache(picCache()?.let { Cache(it, PIC_HTTP_CACHE_MB * 1024L * 1024L) })
         .addInterceptor(picHeaderInterceptor)
         .addNetworkInterceptor(picForceCacheInterceptor)
