@@ -1,6 +1,7 @@
 package com.github.catvod.crawler.js
 
 import android.os.SystemClock
+import android.util.Base64
 import android.webkit.WebSettings
 
 import androidx.annotation.Keep
@@ -9,6 +10,7 @@ import com.github.catvod.Proxy
 import com.github.catvod.crawler.js.rsa.RSAEncrypt
 import com.github.avbox.osc.util.AppContextHolder
 import com.github.avbox.osc.util.AppLog
+import com.github.avbox.osc.util.MD5
 import com.github.avbox.osc.util.UserAgentPool
 import com.whl.quickjs.wrapper.ContextSetter
 import com.whl.quickjs.wrapper.Function
@@ -176,6 +178,36 @@ class Global {
     @Function
     fun pdfla(html: String, p1: String, list_text: String, list_url: String, add_url: String): JSArray {
         return JSUtils<String>().toArray(requireNotNull(runtime) { "js runtime not ready" }, HtmlParser.parseDomForList(html, p1, list_text, list_url, add_url))
+    }
+
+    @Keep
+    @Function
+    fun md5X(text: String?): String {
+        return try {
+            MD5.encode(text ?: "") ?: ""
+        } catch (e: Exception) {
+            ""
+        }
+    }
+
+    @Keep
+    @Function
+    fun base64Encode(text: String?): String {
+        return try {
+            Base64.encodeToString((text ?: "").toByteArray(), Base64.NO_WRAP)
+        } catch (e: Exception) {
+            ""
+        }
+    }
+
+    @Keep
+    @Function
+    fun base64Decode(text: String?): String {
+        return try {
+            String(Base64.decode(text ?: "", Base64.DEFAULT))
+        } catch (e: Exception) {
+            ""
+        }
     }
 
     @Keep
