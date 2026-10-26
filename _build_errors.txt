@@ -1,0 +1,200 @@
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/api/ApiConfig.kt:319:25 Unresolved reference 'getHomeSourceBean'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/api/ConfigParser.kt:111:16 Unresolved reference 'setSearchable' on receiver of type 'SourceBean'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/api/ConfigParser.kt:112:16 Unresolved reference 'setQuickSearch' on receiver of type 'SourceBean'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/api/ConfigParser.kt:113:16 Unresolved reference 'setChangeable' on receiver of type 'SourceBean'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/net/SearchSettings.kt:30:38 Unresolved reference 'KV'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/net/SearchSettings.kt:31:9 Incompatible types 'MatchGroup?' and 'String'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/net/SearchSettings.kt:32:9 Incompatible types 'MatchGroup?' and 'String'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/net/SearchSettings.kt:37:9 Unresolved reference 'KV'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/net/SearchSettings.kt:47:42 Unresolved reference 'KV'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/net/SearchSettings.kt:47:42 Return type mismatch: expected 'Boolean', actual 'MatchGroup?'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/net/SearchSettings.kt:50:9 Unresolved reference 'KV'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/net/SearchSettings.kt:54:13 Unresolved reference 'KV'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/net/SearchSettings.kt:54:13 Operator '==' cannot be applied to 'MatchGroup?' and 'String'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/net/SearchSettings.kt:61:9 Unresolved reference 'KV'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/net/SearchSettings.kt:68:19 Unresolved reference 'KV'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/net/SearchSettings.kt:68:26 Unresolved reference 'KVKeys'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/net/SearchSettings.kt:69:20 Unresolved reference 'isNotEmpty' on receiver of type 'MatchGroup?'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/net/SearchSettings.kt:69:36 Unresolved reference 'emptyApis'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/net/SearchSettings.kt:73:19 Unresolved reference 'KV'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/net/SearchSettings.kt:73:26 Unresolved reference 'KVKeys'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/net/SearchSettings.kt:74:17 Unresolved reference 'isEmpty' on receiver of type 'MatchGroup?'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/net/SearchSettings.kt:76:22 Unresolved reference 'KV'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/net/SearchSettings.kt:76:71 Unresolved reference 'KVKeys'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/net/SearchSettings.kt:77:28 No 'get' operator method providing array access.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/net/SearchSettings.kt:82:19 Unresolved reference 'KV'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/net/SearchSettings.kt:82:26 Unresolved reference 'KVKeys'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/net/SearchSettings.kt:83:17 Unresolved reference 'isEmpty' on receiver of type 'MatchGroup?'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/net/SearchSettings.kt:86:19 Unresolved reference 'KV'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/net/SearchSettings.kt:86:68 Unresolved reference 'KVKeys'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/net/SearchSettings.kt:86:98 Cannot infer type for type parameter 'K'. Specify it explicitly.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/net/SearchSettings.kt:86:98 Cannot infer type for type parameter 'V'. Specify it explicitly.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/net/SearchSettings.kt:88:17 Unresolved reference 'remove' on receiver of type 'Any'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/net/SearchSettings.kt:90:16 No 'set' operator method providing array access.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/net/SearchSettings.kt:92:17 Unresolved reference 'isEmpty' on receiver of type 'Any'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/net/SearchSettings.kt:92:28 Unresolved reference 'KV'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/net/SearchSettings.kt:92:38 Unresolved reference 'KVKeys'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/net/SearchSettings.kt:92:70 Unresolved reference 'KV'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/net/SearchSettings.kt:92:77 Unresolved reference 'KVKeys'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/net/SearchSettings.kt:93:9 Unresolved reference 'setUpEmpty'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/sourcedata/SortDiskCache.kt:84:13 Unresolved reference 'LOG'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/ConfigManageActivity.kt:83:13 Unresolved reference 'LOG'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/DetailActivity.kt:407:13 Unresolved reference 'not' for operator '!'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/DetailActivity.kt:407:17 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/DetailActivity.kt:407:21 Unresolved reference 'KVKeys'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/DetailActivity.kt:407:49 Unresolved reference 'KVKeys'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/HtmlActivity.kt:14:33 Unresolved reference 'OkGoHelper'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/HtmlActivity.kt:129:17 Unresolved reference 'LOG'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/HtmlActivity.kt:178:13 Unresolved reference 'LOG'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/HtmlActivity.kt:193:13 Unresolved reference 'LOG'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/HtmlActivity.kt:213:13 Unresolved reference 'LOG'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/HtmlActivity.kt:258:13 Unresolved reference 'LOG'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/HtmlActivity.kt:266:30 Unresolved reference 'OkGoHelper'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/HtmlActivity.kt:285:17 Unresolved reference 'LOG'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/HtmlActivity.kt:303:17 Unresolved reference 'LOG'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/SearchScreen.kt:75:17 Property delegate must have a 'getValue(Nothing?, KProperty0<??? (Unknown type for type parameter T)>)' method. None of the following functions is applicable:
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/SearchScreen.kt:75:20 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/SearchScreen.kt:75:23 Overload resolution ambiguity between candidates:
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/SearchScreen.kt:75:31 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/SearchScreen.kt:84:19 No value passed for parameter 'lookupCollected'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/SearchScreen.kt:84:19 No value passed for parameter 'onCollectToggle'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/SearchScreen.kt:85:25 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/SearchScreen.kt:85:25 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/SearchScreen.kt:85:36 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/SearchScreen.kt:85:51 Unresolved reference 'SearchSettings'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/SearchScreen.kt:89:29 Unresolved reference 'isCheckedSourcesStale'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/SearchScreen.kt:90:29 Unresolved reference 'loadCheckedSources'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/SearchScreen.kt:175:25 Unresolved reference 'HistoryHelper'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/SearchScreen.kt:176:25 'val' cannot be reassigned.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/SearchScreen.kt:179:25 Unresolved reference 'HistoryHelper'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/SearchScreen.kt:180:25 'val' cannot be reassigned.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/SearchScreen.kt:180:33 Assignment type mismatch: actual type is 'MatchGroup?', but 'List<String>' was expected.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/SearchScreen.kt:180:35 Unresolved reference 'KV'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/SearchScreen.kt:180:42 Unresolved reference 'KVKeys'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/SearchScreen.kt:180:65 Cannot infer type for type parameter 'E'. Specify it explicitly.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/SearchViewModel.kt:68:9 Conflicting declarations:
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/SearchViewModel.kt:92:9 Conflicting declarations:
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/SearchViewModel.kt:238:39 Unresolved reference 'getHomeSourceBean' on receiver of type 'ApiConfig'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/SearchViewModel.kt:279:36 Unresolved reference 'getHomeSourceBean' on receiver of type 'ApiConfig'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/components/SearchSettingsSheet.kt:50:17 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/components/SearchSettingsSheet.kt:50:17 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/components/SearchSettingsSheet.kt:50:28 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/components/SearchSettingsSheet.kt:50:43 Unresolved reference 'SiteKind'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/components/SearchSettingsSheet.kt:51:19 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/components/SearchSettingsSheet.kt:51:42 Unresolved reference 'ApiConfig'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/components/SearchSettingsSheet.kt:51:58 Unresolved reference 'getSourceBeanList' on receiver of type 'MatchGroup?'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/components/SearchSettingsSheet.kt:52:19 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/components/SearchSettingsSheet.kt:52:70 Unresolved reference 'SiteKind'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/components/SearchSettingsSheet.kt:52:86 Unresolved reference 'siteKindOf'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/components/SearchSettingsSheet.kt:52:97 Unresolved reference 'it'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/components/SearchSettingsSheet.kt:53:19 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/components/SearchSettingsSheet.kt:53:53 Unresolved reference 'it'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/components/SearchSettingsSheet.kt:100:29 Unresolved reference 'SiteCardShapeSingle'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/components/SearchSettingsSheet.kt:112:13 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/components/SearchSettingsSheet.kt:113:27 Unresolved reference 'SiteKind'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/components/SearchSettingsSheet.kt:113:51 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/components/SearchSettingsSheet.kt:113:65 Unresolved reference 'it'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/components/SearchSettingsSheet.kt:113:75 Unresolved reference 'it'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/components/SearchSettingsSheet.kt:115:36 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/components/SearchSettingsSheet.kt:136:36 Unresolved reference 'selected'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/components/SearchSettingsSheet.kt:139:81 Unresolved reference 'selected'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/components/SearchSettingsSheet.kt:139:104 Function invocation 'size(...)' expected.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/components/SearchSettingsSheet.kt:153:40 Unresolved reference 'applySelection'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/components/SearchSettingsSheet.kt:154:40 Unresolved reference 'applySelection'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/components/SearchSettingsSheet.kt:154:65 Unresolved reference 'selected'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/components/SearchSettingsSheet.kt:174:48 Unresolved reference 'key' on receiver of type 'Char'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/components/SearchSettingsSheet.kt:175:29 Unresolved reference 'SiteSourceCard'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/components/SearchSettingsSheet.kt:176:45 Unresolved reference 'name' on receiver of type 'Char'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/components/SearchSettingsSheet.kt:176:51 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/components/SearchSettingsSheet.kt:176:58 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/components/SearchSettingsSheet.kt:177:55 Unresolved reference 'selected'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/components/SearchSettingsSheet.kt:179:41 Unresolved reference 'SiteCardShapeLeft'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/components/SearchSettingsSheet.kt:181:37 Unresolved reference 'onApplySelection'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/components/SearchSettingsSheet.kt:182:56 Unresolved reference 'selected'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/components/SearchSettingsSheet.kt:182:66 Unresolved reference 'selected'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/components/SearchSettingsSheet.kt:182:90 Unresolved reference 'selected'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/components/SearchSettingsSheet.kt:189:54 Unresolved reference 'key' on receiver of type 'Char'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/components/SearchSettingsSheet.kt:190:33 Unresolved reference 'SiteSourceCard'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/components/SearchSettingsSheet.kt:191:50 Unresolved reference 'name' on receiver of type 'Char'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/components/SearchSettingsSheet.kt:191:56 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/components/SearchSettingsSheet.kt:191:63 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/components/SearchSettingsSheet.kt:192:60 Unresolved reference 'selected'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/components/SearchSettingsSheet.kt:194:45 Unresolved reference 'SiteCardShapeRight'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/components/SearchSettingsSheet.kt:196:41 Unresolved reference 'onApplySelection'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/components/SearchSettingsSheet.kt:197:61 Unresolved reference 'selected'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/components/SearchSettingsSheet.kt:197:71 Unresolved reference 'selected'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/components/SearchSettingsSheet.kt:197:96 Unresolved reference 'selected'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/ConfigManagePage.kt:60:32 Unresolved reference 'activity'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/ConfigManagePage.kt:357:45 Unresolved reference 'MainActivity'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/ConfigManagePage.kt:357:65 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/ConfigManagePage.kt:357:65 Candidate 'val <T> KClass<T>.java: Class<T>' is inapplicable because of a receiver type mismatch.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/ConfigManagePage.kt:358:38 Unresolved reference 'putExtra'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/ConfigManagePage.kt:358:47 Unresolved reference 'MainActivity'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/ConfigManagePage.kt:366:41 Unresolved reference 'mIsVod'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/ConfigManagePage.kt:388:60 Unresolved reference 'mIsVod'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/ConfigManagePage.kt:394:60 Unresolved reference 'mIsVod'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/ConfigManagePage.kt:395:45 Unresolved reference 'mIsVod'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/ConfigManagePage.kt:430:31 Unresolved reference 'mOrdered'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/ConfigManagePage.kt:430:91 Argument type mismatch: actual type is 'Int', but 'String' was expected.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/HomePage.kt:125:43 Unresolved reference 'SiteCardShapeLeft'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/HomePage.kt:126:43 Unresolved reference 'SiteCardShapeRight'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/HomePage.kt:127:43 Unresolved reference 'SiteCardShapeSingle'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/HomePage.kt:129:43 Unresolved reference 'SiteKind'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/HomePage.kt:130:43 Unresolved reference 'SiteSourceCard'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/HomePage.kt:131:43 Unresolved reference 'siteKindOf'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/HomePage.kt:635:31 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/HomePage.kt:635:31 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/HomePage.kt:635:42 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/HomePage.kt:635:57 Unresolved reference 'SiteKind'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/HomePage.kt:637:49 Unresolved reference 'SiteKind'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/HomePage.kt:637:65 Unresolved reference 'siteKindOf'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/HomePage.kt:646:17 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/HomePage.kt:647:31 Unresolved reference 'SiteKind'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/HomePage.kt:647:55 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/HomePage.kt:647:69 Unresolved reference 'it'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/HomePage.kt:647:79 Unresolved reference 'it'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/HomePage.kt:649:40 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/HomePage.kt:722:33 Unresolved reference 'SiteSourceCard'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/HomePage.kt:727:57 Unresolved reference 'SiteCardShapeLeft'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/HomePage.kt:727:80 Unresolved reference 'SiteCardShapeRight'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/HomePage.kt:729:41 Unresolved reference 'SiteCardShapeSingle'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/HomePage.kt:771:9 No value passed for parameter 'onSelectionChanged'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/HomePage.kt:772:13 No parameter with name 'sources' found.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/HomePage.kt:773:13 No parameter with name 'selected' found.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/HomePage.kt:774:13 No parameter with name 'onApplySelection' found.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/HomePage.kt:774:68 Unresolved reference 'it'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/HomeViewModel.kt:229:17 'val' cannot be reassigned.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/HomeViewModel.kt:229:41 Unresolved reference 'getSwitchSourceBeanList' on receiver of type 'ApiConfig'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/HomeViewModel.kt:252:17 Unresolved reference 'LOG'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/HomeViewModel.kt:261:25 Unresolved reference 'LOG'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/PlaySettingsPage.kt:209:35 Unresolved reference 'state'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/PlaySettingsPage.kt:210:45 Unresolved reference 'vm'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/PlaySettingsPage.kt:210:52 Unresolved reference 'KVKeys'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/PreferenceSettingsPage.kt:196:37 Unresolved reference 'state'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/PreferenceSettingsPage.kt:196:37 Argument type mismatch: actual type is 'Sequence<uninferred T (of fun <T> Sequence<T>.ifEmpty)>', but 'String?' was expected.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/PreferenceSettingsPage.kt:196:52 Cannot infer type for type parameter 'T'. Specify it explicitly.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/PreferenceSettingsPage.kt:196:62 @Composable invocations can only happen from the context of a @Composable function
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/PreferenceSettingsPage.kt:269:27 Unresolved reference 'state'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/PreferenceSettingsPage.kt:273:49 Unresolved reference 'getHomeSourceBean' on receiver of type 'ApiConfig'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/PreferenceSettingsPage.kt:274:17 Unresolved reference 'vm'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/SettingsPage.kt:77:22 Unresolved reference 'Anime4kTier'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/SettingsPage.kt:167:20 Unresolved reference 'KV'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/SettingsPage.kt:167:20 Argument type mismatch: actual type is 'MatchGroup?', but 'Int' was expected.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/SettingsPage.kt:167:27 Unresolved reference 'KVKeys'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/SettingsPage.kt:168:22 Unresolved reference 'KV'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/SettingsPage.kt:168:22 Argument type mismatch: actual type is 'MatchGroup?', but 'Int' was expected.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/SettingsPage.kt:168:29 Unresolved reference 'KVKeys'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/SettingsPage.kt:169:21 Unresolved reference 'KV'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/SettingsPage.kt:169:21 Argument type mismatch: actual type is 'MatchGroup?', but 'Int' was expected.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/SettingsPage.kt:169:28 Unresolved reference 'KVKeys'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/SettingsPage.kt:170:21 Unresolved reference 'KV'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/SettingsPage.kt:170:21 Argument type mismatch: actual type is 'MatchGroup?', but 'String' was expected.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/SettingsPage.kt:170:28 Unresolved reference 'KVKeys'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/SettingsPage.kt:171:23 Unresolved reference 'Anime4kTier'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/SettingsPage.kt:172:25 Unresolved reference 'KV'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/SettingsPage.kt:172:25 Argument type mismatch: actual type is 'MatchGroup?', but 'Boolean' was expected.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/SettingsPage.kt:172:32 Unresolved reference 'KVKeys'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/SettingsPage.kt:172:55 Unresolved reference 'KVKeys'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/SettingsPage.kt:173:22 Unresolved reference 'KV'.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/SettingsPage.kt:173:22 Argument type mismatch: actual type is 'MatchGroup?', but 'Boolean' was expected.
+e: file:///home/runner/work/AVBox/AVBox/app/src/main/java/com/github/avbox/osc/ui/page/SettingsPage.kt:173:29 Unresolved reference 'KVKeys'.
