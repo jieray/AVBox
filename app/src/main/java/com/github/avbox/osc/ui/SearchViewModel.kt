@@ -89,7 +89,6 @@ class SearchViewModel(initialTitle: String? = null) : ViewModel(), TmdbPosterCac
     /** 当前搜索范围：全站 / 站内 / 选中。 */
     val searchScope = MutableStateFlow(SearchSettings.scope())
 
-    val suggest = MutableStateFlow<List<String>>(emptyList())
 
     private var suggestJob: Job? = null
 
@@ -235,7 +234,7 @@ class SearchViewModel(initialTitle: String? = null) : ViewModel(), TmdbPosterCac
      * - Selected：搜索设置里勾选的站点，未勾选任何站点时退回全站
      */
     fun resolveScopeKeys(): Set<String>? {
-        val homeKey = ApiConfig.get().getHomeSourceBean().key
+        val homeKey = ApiConfig.get().homeSourceBean().key
         return when (searchScope.value) {
             SearchSettings.SearchScope.Current -> if (homeKey.isNullOrEmpty()) emptySet() else setOf(homeKey)
             SearchSettings.SearchScope.Selected -> {
@@ -276,7 +275,7 @@ class SearchViewModel(initialTitle: String? = null) : ViewModel(), TmdbPosterCac
             entry.value.complete(Unit)
         }
         pendingSources.clear()
-        val home = ApiConfig.get().getHomeSourceBean()
+        val home = ApiConfig.get().homeSourceBean()
         val scopeKeys = resolveScopeKeys()
         val sources = ApiConfig.get().getSourceBeanList()
             .filter { it.isSearchable() && (scopeKeys == null || scopeKeys.contains(it.key)) }
