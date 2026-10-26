@@ -28,6 +28,7 @@ import com.github.avbox.osc.bean.TmdbPosterCache
 import com.github.avbox.osc.util.KV
 import com.github.avbox.osc.util.KVKeys
 import com.github.avbox.osc.util.TmdbImages
+import com.github.avbox.osc.util.DetailIntent
 import com.github.avbox.osc.util.HistoryHelper
 import com.github.avbox.osc.util.AppLog
 import com.github.avbox.osc.util.LanguageManager
@@ -443,11 +444,13 @@ class DetailViewModel : ViewModel(), TmdbPosterCache {
 
     private fun parseTarget(intent: Intent?): DetailNavStack.Target? {
         val bundle = intent?.extras ?: return null
+        // 走 DetailIntent 兼容层：认 key/id/name/pic 等多种别名，
+        // 第三方 jar、py 脚本按影视TV 约定塞的 extra 也能读出来
         return DetailNavStack.Target(
-            vodId = bundle.getString("id", "").orEmpty(),
-            sourceKey = bundle.getString("sourceKey", "").orEmpty(),
-            title = bundle.getString("title", "").orEmpty(),
-            picture = bundle.getString("picture", "").orEmpty(),
+            vodId = DetailIntent.id(bundle),
+            sourceKey = DetailIntent.sourceKey(bundle),
+            title = DetailIntent.title(bundle),
+            picture = DetailIntent.picture(bundle),
             fromCollect = bundle.getBoolean("collect", false),
         )
     }
