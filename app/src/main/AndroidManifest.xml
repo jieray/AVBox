@@ -77,6 +77,11 @@
             android:windowSoftInputMode="adjustResize"
             android:configChanges="orientation|screenSize" />
         <activity
+            android:name=".ui.HtmlActivity"
+            android:launchMode="singleTop"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+        <activity
             android:name=".ui.MusicPlayerActivity"
             android:configChanges="orientation|screenSize" />
         <activity
