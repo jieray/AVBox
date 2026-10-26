@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">AVBox</string>
+    <string name="app_name">X-BOX</string>
 
     <string name="settings_language">语言</string>
     <string name="settings_group_language_layout">语言与布局</string>
@@ -284,6 +284,11 @@
     <string name="search_sites_none_hint">未选择站点，将搜不到结果</string>
     <string name="search_sites_selected_hint">已选 %1$d/%2$d，全选即搜索全部站点</string>
     <string name="search_sites_empty">暂无可用站点</string>
+    <string name="search_scope_title">搜索范围</string>
+    <string name="search_scope_all">全站搜索</string>
+    <string name="search_scope_current">站内搜索</string>
+    <string name="search_scope_selected">选中搜索</string>
+    <string name="search_scope_switched">已切换为%1$s</string>
 
     <string name="live_brightness">亮度</string>
     <string name="live_volume">音量</string>
@@ -405,6 +410,8 @@
     <string name="settings_play_prefer_aac">AAC 优先</string>
     <string name="settings_music_page">音乐播放页</string>
     <string name="settings_music_page_subtitle">识别为纯音频时自动打开</string>
+    <string name="settings_play_auto_landscape">解析到视频后自动横屏</string>
+    <string name="settings_play_auto_landscape_subtitle">关闭后保持进入播放时的方向，不再强制横屏</string>
 
     <string name="toast_config_parse_failed">配置解析失败</string>
     <string name="toast_config_fetch_failed">拉取配置失败\n%1$s</string>
@@ -634,4 +641,26 @@
     <string name="osd_tunnel">隧道</string>
     <string name="osd_preload">预载</string>
     <string name="osd_cache">缓存</string>
+    <string name="settings_proxy_url">代理地址</string>
+    <string name="settings_proxy_url_hint">留空则使用 http://127.0.0.1:2080</string>
+    <string name="home_proxy">代理</string>
+    <string name="toast_proxy_on">已开启代理</string>
+    <string name="toast_proxy_off">已关闭代理</string>
+    <string name="config_add_local_script">添加脚本本地地址</string>
+    <string name="config_site_manage">站点管理</string>
+    <string name="config_local_script_hint">填写存放 py/js 脚本的目录</string>
+    <string name="toast_local_script_empty">该目录下没有找到 py/js 脚本</string>
+    <string name="toast_local_script_added">已添加，共 %1$d 个脚本</string>
+    <string name="config_field_path">目录</string>
+    <string name="config_list_double">双列</string>
+    <string name="config_list_single">单列</string>
+    <string name="config_script_path_hint">脚本目录，例如 /storage/emulated/0/脚本</string>
+    <string name="home_site_ext">扩展参数</string>
+    <string name="home_site_ext_hint">该站点的 ext，留空则使用订阅源的值</string>
+    <string name="search_action_all">全站搜索</string>
+    <string name="search_action_home">站内搜索</string>
+    <string name="search_action_selected">选中搜索</string>
+    <string name="search_scope_home">已切换为站内搜索</string>
+    <string name="toast_proxy_url_saved">代理地址已保存</string>
+    <string name="toast_site_ext_saved">已保存，正在刷新</string>
 </resources>
