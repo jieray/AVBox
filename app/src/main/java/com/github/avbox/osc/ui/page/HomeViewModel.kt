@@ -226,14 +226,14 @@ class HomeViewModel : ViewModel(), TmdbPosterCache {
 
     /** 刷新站点列表与订阅源列表（不重载首页内容） */
     fun refreshSources() {
-        sources.value = ApiConfig.get().getSwitchSourceBeanList()
+        sources.value = ApiConfig.get().switchSourceBeanList()
         refreshSubscribes()
     }
 
     /**
      * 列表刷新：真正重新读取当前订阅源。
      *
-     * 之前只做 sources.value = ApiConfig.get().getSwitchSourceBeanList()，
+     * 之前只做 sources.value = ApiConfig.get().switchSourceBeanList()，
      * 读的是内存里已解析好的那份——站点管理改动的是磁盘上的 lscript.json，
      * 内存那份没重新解析，所以点刷新看不出任何变化。
      * 这里对本地脚本源重新扫描目录并 parseJson，才拿得到增删后的站点。
@@ -249,7 +249,7 @@ class HomeViewModel : ViewModel(), TmdbPosterCache {
             val json = try {
                 LocalScriptSource.buildJson(url)
             } catch (th: Throwable) {
-                LOG.e("HomeViewModel", th)
+                AppLog.e("HomeViewModel", th)
                 null
             }
             launch(Dispatchers.Main) {
@@ -258,7 +258,7 @@ class HomeViewModel : ViewModel(), TmdbPosterCache {
                     try {
                         ApiConfig.get().parseJson(url, json)
                     } catch (th: Throwable) {
-                        LOG.e("HomeViewModel", th)
+                        AppLog.e("HomeViewModel", th)
                     }
                 }
                 refreshSources()
