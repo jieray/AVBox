@@ -13,6 +13,7 @@ import com.github.avbox.osc.util.ApiLineSignal
 import com.github.avbox.osc.boot.BootGuard
 import com.github.avbox.osc.data.PlaybackPorts
 import com.github.avbox.osc.util.KVKeys
+import com.github.avbox.osc.util.LocalScriptSource
 import com.github.avbox.osc.util.HistoryHelper
 import com.github.avbox.osc.util.KV
 import com.github.avbox.osc.util.AppLog
@@ -78,6 +79,24 @@ class ConfigLoader(private val owner: ApiConfig) {
         val apiUrl = guarded(callback, R.string.toast_config_parse_failed) { KV.get(KVKeys.API_URL, "") } ?: return
         if (apiUrl.isEmpty()) {
             callback.error("-1")
+            return
+        }
+        if (LocalScriptSource.isLocalScript(apiUrl)) {
+            configLoadExecutor.execute(Runnable {
+                try {
+                    val json = LocalScriptSource.buildJson(apiUrl)
+                    if (isStaleFetch(apiUrl)) {
+                        callback.error("stale")
+                        return@Runnable
+                    }
+                    clearApiLinesIfUnmatched(apiUrl)
+                    owner.parseJson(apiUrl, json)
+                    callback.success()
+                } catch (th: Throwable) {
+                    AppLog.e("ApiConfig", th)
+                    callback.error(ApiConfig.str(R.string.toast_config_parse_failed))
+                }
+            })
             return
         }
         val cache = guarded(callback, R.string.toast_config_parse_failed) {
