@@ -350,6 +350,13 @@ class SpiderLoader {
 
     fun getCSP(sourceBean: SourceBean): Spider {
         val api = sourceBean.api ?: ""
+        // type 6 = html 脚本，必须先看 type 再看后缀：
+        // 在线录入的 url 常常不带 .html 结尾（如 https://x.com/spider?a=1），
+        // 只看后缀会被当成 jar 去下载，必然失败 —— 这就是「url 的 html 打不开」。
+        if (sourceBean.type == TYPE_HTML) {
+            currentPyKey = ""
+            return HtmlSpider(sourceBean.key, sourceBean.api, sourceBean.ext)
+        }
         if (api.endsWith(".js") || api.contains(".js?")) {
             currentPyKey = ""
             return jsLoader.getSpider(sourceBean.key, sourceBean.api, sourceBean.ext, sourceBean.jar)
@@ -518,6 +525,8 @@ class SpiderLoader {
 
     companion object {
         private const val LOAD_JAR_MAX_RETRY = 1
+        /** 站点 type 6 = html 脚本（本地 .html 或在线 url，WebView 承载） */
+        private const val TYPE_HTML = 6
 
         @JvmStatic
         fun closeQuietly(closeable: Closeable?) {

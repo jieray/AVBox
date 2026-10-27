@@ -42,6 +42,9 @@ class HtmlActivity : Activity() {
     private var settled = false
     private var currentReq: Request? = null
     private var curSiteKey: String? = null
+    /** 每次调用只允许注入执行一次：onPageFinished 会因重定向/iframe 触发多次，
+     *  重复执行会让脚本回调两次，Spider 侧拿到第二次的空结果。 */
+    private var invoked = false
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -65,6 +68,9 @@ class HtmlActivity : Activity() {
 
         wv.settings.javaScriptEnabled = true
         wv.settings.domStorageEnabled = true
+        // 在线 url 页面常是 https 壳里嵌 http 资源，默认 MIXED_CONTENT_NEVER_ALLOW
+        // 会直接拦掉，页面白屏、脚本永远不执行 —— 表现为「url 的 html 打不开」。
+        wv.settings.mixedContentMode = android.webkit.WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
         wv.settings.loadWithOverviewMode = true
         wv.settings.useWideViewPort = true
         wv.settings.userAgentString = wv.settings.userAgentString
@@ -78,6 +84,28 @@ class HtmlActivity : Activity() {
         wv.webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 injectAndInvoke(req)
+            }
+
+            // 在线 url 打不开（DNS/404/证书…）时立刻交付，别让 Spider 干等 30 秒超时
+            override fun onReceivedError(
+                view: WebView?,
+                errorCode: Int,
+                description: String?,
+                failingUrl: String?,
+            ) {
+                AppLog.i("$TAG: load error $errorCode ${description ?: ""}")
+                settle(null)
+            }
+
+            override fun onReceivedError(
+                view: WebView?,
+                request: android.webkit.WebResourceRequest?,
+                error: android.webkit.WebResourceError?,
+            ) {
+                // Android 6+ 走这个重载；只对主请求生效，子资源失败不算
+                if (request != null && !request.isForMainFrame) return
+                AppLog.i("$TAG: load error ${error?.errorCode} ${error?.description}")
+                settle(null)
             }
         }
 
@@ -103,6 +131,8 @@ class HtmlActivity : Activity() {
     }
 
     private fun injectAndInvoke(req: Request) {
+        if (invoked) return
+        invoked = true
         val api = readAsset("fm-api.js") ?: ""
         val argsArray = argsToArray(req.method, req.args)
         val script = """
@@ -202,6 +232,7 @@ class HtmlActivity : Activity() {
         mainHandler.removeCallbacks(idleClose)
         currentReq = req
         curSiteKey = req.siteKey
+        invoked = false   // 复用本页跑下一次调用，允许再注入一次
         injectAndInvoke(req)
     }
 
