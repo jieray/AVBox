@@ -137,7 +137,6 @@ class HtmlSpider(
     }
 
     private fun call(method: String, args: JSONObject): String? {
-        val ctx = AppContextHolder.context() ?: return null
         val latch = CountDownLatch(1)
         val result = AtomicReference<String?>()
         val request = HtmlActivity.Request(
@@ -157,11 +156,18 @@ class HtmlSpider(
                 if (HtmlActivity.dispatchToLive(request)) return@post
                 HtmlActivity.finishIfRunning(null)
                 HtmlActivity.pending = request
-                ctx.startActivity(
-                    android.content.Intent(ctx, HtmlActivity::class.java)
-                        .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
-                        .addFlags(android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP),
-                )
+                // 用前台 Activity 启动，别用 Application + NEW_TASK：
+                // NEW_TASK 会让系统去复用/另起 task，本 task 还在前台时这次启动
+                // 常被压在后面，表现就是 html 页面被首页遮住。
+                val starter = resolveStarter() ?: run {
+                    latch.countDown()
+                    return@post
+                }
+                val launch = android.content.Intent(starter, HtmlActivity::class.java)
+                if (starter !is android.app.Activity) {
+                    launch.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                starter.startActivity(launch)
             } catch (th: Throwable) {
                 LOG.e(TAG, th)
                 latch.countDown()
@@ -174,6 +180,27 @@ class HtmlSpider(
         }
         if (!ok) LOG.i("$TAG: $method timeout after ${TIMEOUT_SEC}s")
         return result.get()
+    }
+
+    /**
+     * 取栈顶 Activity 作为启动上下文。拿不到才退回 Application。
+     * 栈顶可能刚被 finishIfRunning 结束掉，所以这里要逐个检查 isFinishing/isDestroyed。
+     */
+    private fun resolveStarter(): android.content.Context? {
+        val stack = try {
+            com.github.avbox.osc.util.ActivityStack.getInstance()
+        } catch (th: Throwable) {
+            null
+        }
+        if (stack != null) {
+            try {
+                val top = stack.currentActivity()
+                if (!top.isFinishing && !top.isDestroyed) return top
+            } catch (th: Throwable) {
+                // 栈为空等，忽略，走下面的兜底
+            }
+        }
+        return AppContextHolder.context()
     }
 
     private companion object {
