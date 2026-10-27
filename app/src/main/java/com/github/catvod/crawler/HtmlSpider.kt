@@ -44,11 +44,10 @@ class HtmlSpider(
      */
     override fun homeContent(filter: Boolean): String? {
         val raw = call("homeContent", JSONObject().put("filter", filter))
-        return withLaunchCard(raw)
+        return withLaunchCard(raw, ensureClass = true)
     }
 
-    override fun homeVideoContent(): String? =
-        call("homeVideoContent", JSONObject())
+    override fun homeVideoContent(): String? = withLaunchCard(call("homeVideoContent", JSONObject()))
 
     override fun categoryContent(
         tid: String?,
@@ -57,13 +56,15 @@ class HtmlSpider(
         extend: HashMap<String, String>?,
     ): String? {
         val map: Map<String, String> = extend ?: emptyMap()
-        return call(
-            "categoryContent",
-            JSONObject()
-                .put("tid", tid ?: "")
-                .put("pg", pg)
-                .put("filter", filter)
-                .put("extend", JSONObject(map).toString()),
+        return withLaunchCard(
+            call(
+                "categoryContent",
+                JSONObject()
+                    .put("tid", tid ?: "")
+                    .put("pg", pg)
+                    .put("filter", filter)
+                    .put("extend", JSONObject(map).toString()),
+            )
         )
     }
 
@@ -77,12 +78,32 @@ class HtmlSpider(
         return call("detailContent", JSONObject().put("ids", org.json.JSONArray(list)))
     }
 
-    /** 把启动卡挂到宫格末尾：真实内容在前，入口永远在 */
-    private fun withLaunchCard(raw: String?): String {
+    /**
+     * 把启动卡挂到宫格末尾：真实内容在前，入口永远在。
+     *
+     * ensureClass=true 时还要兜底分类：脚本没返回 class、或 class 为空数组，
+     * 首页分类就是空的，SortLoader 会把它判成解析失败并弹「加载失败，请检查网络」——
+     * 所以 html 站点必须永远至少有一个分类。
+     */
+    private fun withLaunchCard(raw: String?, ensureClass: Boolean = false): String {
         val base = if (raw.isNullOrBlank()) JSONObject() else try {
             JSONObject(raw)
         } catch (th: Throwable) {
             JSONObject()
+        }
+        if (ensureClass) {
+            val cls = base.optJSONArray("class")
+            val empty = cls == null || cls.length() == 0
+            if (empty) {
+                base.put(
+                    "class",
+                    org.json.JSONArray().put(
+                        JSONObject()
+                            .put("type_id", LAUNCH_TID)
+                            .put("type_name", LAUNCH_CLASS_NAME),
+                    ),
+                )
+            }
         }
         if (!base.has("list")) base.put("list", org.json.JSONArray())
         val arr = base.optJSONArray("list") ?: org.json.JSONArray()
@@ -208,5 +229,7 @@ class HtmlSpider(
         const val TIMEOUT_SEC = 30L
         const val LAUNCH_NAME = "启动脚本"
         const val LAUNCH_ID = "__html_launch__"
+        const val LAUNCH_TID = "__html_launch__"
+        const val LAUNCH_CLASS_NAME = "启动"
     }
 }

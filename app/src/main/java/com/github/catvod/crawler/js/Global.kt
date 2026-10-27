@@ -1,6 +1,12 @@
 package com.github.catvod.crawler.js
 
 import android.os.SystemClock
+import android.os.Handler
+import android.os.Looper
+import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicReference
+import org.json.JSONObject
 import android.util.Base64
 import android.webkit.WebSettings
 
@@ -633,6 +639,213 @@ class Global {
         }, requireNotNull(delay) { "delay is null" }.toLong())
     }
 
+    /**
+     * T4 / 猫影视系 dialog API —— 同步阻塞版。
+     *
+     * 脚本写法：const r = await dialog({title, message, inputs:[...], buttons:[...], onAction})
+     * 返回：{ button: '点了哪个按钮', values: { 输入框名: 值 } }
+     *
+     * 之所以做成同步阻塞：QuickJS 的 Promise 要靠 job 队列驱动，走真正的异步
+     * 很容易让 await 永远挂住。这里由 JS 线程阻塞等待，等待期间周期性驱动
+     * pending job，onAction 里的 await 能继续往下跑；而 await 一个普通对象会
+     * 立刻返回，脚本写法不用改。
+     *
+     * 窗口在主线程弹出、结果回到 JS 线程，两边靠队列交接，不会互相卡死。
+     */
+    @Keep
+    @Function
+    fun dialog(args: JSObject?): Any? {
+        val ctx = runtime ?: return null
+        // 主线程被占住时 post 出去的弹窗永远没机会执行，直接放弃而不是死锁
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            AppLog.i("Global: dialog ignored on main thread")
+            return null
+        }
+        val act = try {
+            com.github.avbox.osc.util.ActivityStack.getInstance().currentActivity()
+        } catch (th: Throwable) {
+            null
+        }
+        if (act == null || act.isFinishing || act.isDestroyed) return null
+        val spec = try {
+            if (args == null) org.json.JSONObject() else JSUtils.toJsonObject(args)
+        } catch (th: Throwable) {
+            org.json.JSONObject()
+        }
+        val onAction = try {
+            args?.getJSFunction("onAction")
+        } catch (th: Throwable) {
+            null
+        }
+        val queue = LinkedBlockingQueue<DialogEvent>()
+        val main = Handler(Looper.getMainLooper())
+        val edits = ArrayList<Pair<String, android.widget.EditText>>()
+        val msgView = AtomicReference<android.widget.TextView?>(null)
+        val dlgRef = AtomicReference<android.app.AlertDialog?>(null)
+
+        main.post {
+            try {
+                val pad = (20 * act.resources.displayMetrics.density).toInt()
+                val wrap = android.widget.LinearLayout(act)
+                wrap.orientation = android.widget.LinearLayout.VERTICAL
+                wrap.setPadding(pad, pad / 2, pad, 0)
+                val tv = android.widget.TextView(act)
+                tv.text = spec.optString("message")
+                tv.setTextColor(0xFFCCCCCC.toInt())
+                wrap.addView(tv)
+                msgView.set(tv)
+
+                val inputs = spec.optJSONArray("inputs")
+                val inputCount = inputs?.length() ?: 0
+                for (i in 0 until inputCount) {
+                    val item = inputs!!.opt(i)
+                    val label = dialogLabel(item, i)
+                    val et = android.widget.EditText(act)
+                    et.hint = label
+                    et.setSingleLine(true)
+                    et.setTextColor(0xFFFFFFFF.toInt())
+                    et.setHintTextColor(0xFF888888.toInt())
+                    if (dialogIsPassword(item)) {
+                        et.inputType = android.text.InputType.TYPE_CLASS_TEXT or
+                            android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
+                    }
+                    wrap.addView(et)
+                    edits.add(Pair(label, et))
+                }
+
+                val buttons = spec.optJSONArray("buttons")
+                val buttonCount = buttons?.length() ?: 0
+                val names = ArrayList<String>()
+                for (i in 0 until buttonCount) names.add(dialogLabel(buttons!!.opt(i), i))
+                if (names.isEmpty()) {
+                    names.add("确定")
+                    names.add("取消")
+                }
+                val fire: (String) -> Unit = { which ->
+                    val vals = LinkedHashMap<String, String>()
+                    for (entry in edits) vals[entry.first] = entry.second.text.toString()
+                    queue.offer(DialogEvent(which, vals, false))
+                }
+                val builder = android.app.AlertDialog.Builder(act)
+                    .setTitle(spec.optString("title"))
+                    .setView(wrap)
+                if (names.size > 0) builder.setPositiveButton(names[0]) { _, _ -> fire(names[0]) }
+                if (names.size > 1) builder.setNegativeButton(names[1]) { _, _ -> fire(names[1]) }
+                if (names.size > 2) builder.setNeutralButton(names[2]) { _, _ -> fire(names[2]) }
+                builder.setOnCancelListener { queue.offer(DialogEvent(null, emptyMap(), true)) }
+                dlgRef.set(builder.show())
+            } catch (th: Throwable) {
+                AppLog.e("Global", th)
+                queue.offer(DialogEvent(null, emptyMap(), true))
+            }
+        }
+
+        val deadline = System.currentTimeMillis() + DIALOG_TIMEOUT_MS
+        while (true) {
+            drainPendingJobs(ctx)
+            val ev = queue.poll(200, TimeUnit.MILLISECONDS)
+            if (ev == null) {
+                if (System.currentTimeMillis() > deadline) {
+                    main.post { dismissQuietly(dlgRef) }
+                    return null
+                }
+                continue
+            }
+            if (ev.dismissed || ev.button == null) {
+                main.post { dismissQuietly(dlgRef) }
+                return null
+            }
+            if (onAction == null) {
+                main.post { dismissQuietly(dlgRef) }
+                return dialogResult(ctx, ev.button, ev.values)
+            }
+            val msg = try {
+                messageOf(onAction.call(dialogResult(ctx, ev.button, ev.values)))
+            } catch (th: Throwable) {
+                AppLog.e("Global", th)
+                ""
+            }
+            // 脚本返回 {msg} 表示还要继续交互：更新提示，窗口保持打开
+            if (msg.isNotEmpty()) {
+                main.post { msgView.get()?.text = msg }
+                continue
+            }
+            main.post { dismissQuietly(dlgRef) }
+            return dialogResult(ctx, ev.button, ev.values)
+        }
+    }
+
+    private fun dismissQuietly(ref: AtomicReference<android.app.AlertDialog?>) {
+        try {
+            ref.get()?.dismiss()
+        } catch (th: Throwable) {
+            // 窗口已经没了，忽略
+        }
+    }
+
+    private fun dialogResult(ctx: QuickJSContext, button: String?, values: Map<String, String>): JSObject {
+        val obj = ctx.createNewJSObject()
+        val vals = ctx.createNewJSObject()
+        for ((key, value) in values) ctx.setProperty(vals, key, value)
+        ctx.setProperty(obj, "values", vals)
+        if (button != null) ctx.setProperty(obj, "button", button)
+        return obj
+    }
+
+    /** 输入框名 / 按钮文案：既认字符串，也认对象里的 name/title/label 等字段 */
+    private fun dialogLabel(item: Any?, index: Int): String {
+        if (item is org.json.JSONObject) {
+            for (k in arrayOf("name", "title", "label", "text", "placeholder", "hint", "key")) {
+                val v = item.optString(k)
+                if (v.isNotEmpty()) return v
+            }
+        } else if (item != null) {
+            val s = item.toString()
+            if (s.isNotEmpty()) return s
+        }
+        return "input$index"
+    }
+
+    private fun dialogIsPassword(item: Any?): Boolean {
+        if (item !is org.json.JSONObject) return false
+        val type = item.optString("type").lowercase()
+        return type.contains("password") || type.contains("pwd")
+    }
+
+    private fun messageOf(ret: Any?): String {
+        val jo = try {
+            JSUtils.toJsonObject(ret as? JSObject)
+        } catch (th: Throwable) {
+            null
+        } ?: return ""
+        return jo.optString("msg", jo.optString("message", ""))
+    }
+
+    /** 驱动 QuickJS 的 Promise 任务队列，让 onAction 里的 await 能继续往下跑 */
+    private fun drainPendingJobs(ctx: QuickJSContext) {
+        try {
+            val method = ctx.javaClass.getMethod("executePendingJob")
+            for (i in 0 until 64) {
+                val r = method.invoke(ctx)
+                val n = when (r) {
+                    is Int -> r
+                    is Long -> r.toInt()
+                    is Boolean -> if (r) 1 else 0
+                    else -> 0
+                }
+                if (n <= 0) break
+            }
+        } catch (th: Throwable) {
+            // 引擎没有这个能力就算了，不影响窗口本身
+        }
+    }
+
+    private class DialogEvent(
+        val button: String?,
+        val values: Map<String, String>,
+        val dismissed: Boolean,
+    )
+
     private fun closeSessionStreams(token: Int) {
         for (stream in streams) {
             if (stream.sessionId != token) continue
@@ -761,6 +974,8 @@ class Global {
             userAgent = value
             return value
         }
+
+        private const val DIALOG_TIMEOUT_MS = 300_000L
 
         private const val DEFAULT_CHUNK = 65536
 
