@@ -136,7 +136,7 @@ class HtmlActivity : Activity() {
                 error: android.webkit.WebResourceError?,
             ) {
                 if (request?.isForMainFrame != false) {
-                    AppLog.e(TAG, "load failed: " + req.url + " err=" + (error?.description ?: ""))
+                    AppLog.i("$TAG: load failed: " + req.url + " err=" + (error?.description ?: ""))
                 }
             }
         }
