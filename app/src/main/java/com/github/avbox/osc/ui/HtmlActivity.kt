@@ -182,7 +182,7 @@ class HtmlActivity : Activity() {
                 text = resp.body?.string()
                 resp.close()
             } catch (th: Throwable) {
-                AppLog.e(TAG, "fetch remote html failed: " + th.message)
+                AppLog.e(TAG, th)
             }
             mainHandler.post {
                 if (isFinishing || isDestroyed) return@post
