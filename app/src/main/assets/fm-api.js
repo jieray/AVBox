@@ -15,10 +15,22 @@
  * 这样脚本不需要写 Promise / await，与 py、js 脚本的写法保持一致。
  */
 (function () {
-  if (window.fm) return;
-
-  var fm = {};
+  // 注意：不能写 "if (window.fm) return;" —— 同一站点会复用同一个 WebView 页面
+  // （homeContent / homeVideoContent / categoryContent 连续调用），第二次注入时
+  // window.fm 已存在，若直接 return 则 _done 仍是 true，fm.done() 永远被吞掉，
+  // 后续调用全部超时返回空 —— 表现就是"只有启动卡，没有任何数据"。
+  // 所以这里必须允许重复执行：每次都重新绑定方法并把 _done 复位。
+  var fm = window.fm;
+  if (!fm || typeof fm !== 'object') {
+    fm = {};
+    window.fm = fm;
+  }
   var _done = false;
+
+  /** 复位回传闸门，供宿主在每次调用脚本前调用 */
+  fm.reset = function () {
+    _done = false;
+  };
 
   fm.log = function (m) {
     try { window.FmBridge.log(String(m)); } catch (e) {}
@@ -57,6 +69,34 @@
   fm.post = function (url, body, headers) {
     return fm.req(url, { method: 'POST', body: body, headers: headers });
   };
+
+  /**
+   * fetch 垫片：把页面里的 fetch 接到 FmBridge 上。
+   *
+   * 不做这层的话，脚本用 fetch/XHR 取数据时走的是 WebView 自己的网络栈，
+   * 站点代理开关对它完全无效（OkHttp 的 proxySelector 管不到 WebView），
+   * 需要代理的站点就会一直取不到数据。垫片让它跟 fm.req 一样走 App 网络栈。
+   */
+  fm.fetch = function (url, opt) {
+    opt = opt || {};
+    var text = fm.req(url, { method: opt.method || 'GET', headers: opt.headers || {}, body: opt.body || '' });
+    return Promise.resolve({
+      ok: true,
+      status: 200,
+      url: url,
+      text: function () { return Promise.resolve(text); },
+      json: function () {
+        try { return Promise.resolve(JSON.parse(text)); }
+        catch (e) { return Promise.reject(e); }
+      },
+      headers: { get: function () { return null; } }
+    });
+  };
+
+  if (window.__fmFetchPatched !== true) {
+    window.__fmFetchPatched = true;
+    window.fetch = fm.fetch;
+  }
 
   /** 站点 ext 持久化（对应修改扩展参数弹窗写入的值） */
   fm.getVar = function (k, def) {

@@ -82,8 +82,51 @@ class HtmlActivity : Activity() {
         mainHandler.postDelayed({ settle(null) }, AUTO_CLOSE_MS)
 
         wv.webViewClient = object : WebViewClient() {
+            override fun onPageStarted(
+                view: WebView?,
+                url: String?,
+                favicon: android.graphics.Bitmap?,
+            ) {
+                // 提前把 fm 挂上：有些脚本在页面顶层就要用 fm.req 预热数据，
+                // 等 onPageFinished 才注入的话那段代码已经因 fm undefined 崩掉了
+                injectApiOnly()
+            }
+
             override fun onPageFinished(view: WebView?, url: String?) {
                 injectAndInvoke(req)
+            }
+
+            /**
+             * 把页面里的子资源接到 App 网络栈，让站点代理对 WebView 同样生效 ——
+             * WebView 自己是不认 OkHttp 的 proxySelector 的。
+             * 取不到就返回 null，交给 WebView 自己加载，不硬拦。
+             */
+            override fun shouldInterceptRequest(
+                view: WebView?,
+                request: android.webkit.WebResourceRequest?,
+            ): android.webkit.WebResourceResponse? {
+                val r = request ?: return null
+                if (r.method != "GET") return null
+                if (r.isForMainFrame) return null // 主文档已由我们走代理取过
+                val url = r.url?.toString() ?: return null
+                if (!url.startsWith("http://") && !url.startsWith("https://")) return null
+                return try {
+                    val resp = com.github.catvod.net.OkHttp.client()
+                        .newCall(okhttp3.Request.Builder().url(url).build())
+                        .execute()
+                    val type = resp.header("content-type") ?: "application/octet-stream"
+                    val mime = type.split(";")[0].trim()
+                    android.webkit.WebResourceResponse(
+                        mime,
+                        charsetOf(type),
+                        resp.code,
+                        if (resp.message.isNullOrEmpty()) "OK" else resp.message,
+                        emptyMap<String, String>(),
+                        resp.body?.byteStream(),
+                    )
+                } catch (th: Throwable) {
+                    null
+                }
             }
 
             // 在线 url 打不开（DNS/404/证书…）时立刻交付，别让 Spider 干等 30 秒超时
@@ -115,8 +158,51 @@ class HtmlActivity : Activity() {
             val base = localBase(req.api)
             wv.loadDataWithBaseURL(base, html, "text/html", "UTF-8", null)
         } else {
-            wv.loadUrl(req.api)
+            // 远程 url：先用 App 网络栈（走站点代理）把正文取回来再注入。
+            // 直接 loadUrl 的话 WebView 走自己的网络栈，代理对它完全无效。
+            fetchRemoteThenLoad(wv, req)
         }
+    }
+
+    /**
+     * 远程 html：走 OkHttp（挂了代理选择器）下载正文，再以原 url 为 baseUrl 注入。
+     * 这样页面正文和页面里的子资源都走同一套代理规则；
+     * 取不到正文（比如纯动态渲染的页面）才退回直接 loadUrl。
+     */
+    private fun fetchRemoteThenLoad(wv: WebView, req: Request) {
+        val url = req.api
+        Thread {
+            var text: String? = null
+            var charset = "UTF-8"
+            try {
+                val resp = com.github.catvod.net.OkHttp.client()
+                    .newCall(okhttp3.Request.Builder().url(url).build())
+                    .execute()
+                charset = charsetOf(resp.header("content-type"))
+                text = resp.body?.string()
+                resp.close()
+            } catch (th: Throwable) {
+                AppLog.e(TAG, "fetch remote html failed: " + th.message)
+            }
+            mainHandler.post {
+                if (isFinishing || isDestroyed) return@post
+                val view = webView ?: return@post
+                if (text.isNullOrEmpty()) {
+                    AppLog.i("$TAG: remote html empty, fallback to loadUrl")
+                    view.loadUrl(url)
+                } else {
+                    view.loadDataWithBaseURL(url, text, "text/html", charset, null)
+                }
+            }
+        }.start()
+    }
+
+    private fun charsetOf(contentType: String?): String {
+        if (contentType.isNullOrEmpty()) return "UTF-8"
+        val i = contentType.indexOf("charset=")
+        if (i < 0) return "UTF-8"
+        return contentType.substring(i + "charset=".length)
+            .split(";", ",")[0].trim().trim('"').ifEmpty { "UTF-8" }
     }
 
     override fun onDestroy() {
@@ -130,6 +216,20 @@ class HtmlActivity : Activity() {
         super.onDestroy()
     }
 
+    /** 只把 fm-api.js 挂进页面，不调用任何脚本函数（供 onPageStarted 用） */
+    private fun injectApiOnly() {
+        val api = readAsset("fm-api.js") ?: return
+        val view = webView ?: return
+        mainHandler.post {
+            try {
+                @Suppress("DEPRECATION")
+                view.evaluateJavascript(api, null)
+            } catch (th: Throwable) {
+                AppLog.e(TAG, th)
+            }
+        }
+    }
+
     private fun injectAndInvoke(req: Request) {
         if (invoked) return
         invoked = true
@@ -138,14 +238,29 @@ class HtmlActivity : Activity() {
         val script = """
             (function(){
               try { $api } catch(e) {}
+              // 复用页面时 fm 已存在，必须先复位回传闸门，否则 fm.done() 被吞
+              try { if (window.fm && typeof window.fm.reset === 'function') window.fm.reset(); } catch(e) {}
+              var fin = function(v){ try { window.fm && window.fm.done(v); } catch(e) {} };
               try {
                 var fn = window['${req.method}'];
-                if (typeof fn !== 'function') { if (window.fm) fm.done({}); return; }
+                if (typeof fn !== 'function') { fin({}); return; }
                 var r = fn.apply(null, $argsArray);
-                if (r !== undefined && r !== null && window.fm) fm.done(r);
+                // 脚本写成 async / 返回 Promise 时，直接 done(Promise) 会被
+                // JSON.stringify 成 {} —— 必须等它落地再取真实值
+                if (r && typeof r.then === 'function') {
+                  Promise.resolve(r).then(function(v){
+                    fin(v === undefined || v === null ? {} : v);
+                  }).catch(function(e){
+                    try { window.fm && window.fm.log('invoke error: ' + e); } catch(e2) {}
+                    fin({});
+                  });
+                  return;
+                }
+                if (r !== undefined && r !== null) { fin(r); return; }
+                // 同步无返回值：交给脚本自己 fm.done()，这里什么都不做
               } catch(e) {
                 try { window.fm && window.fm.log('invoke error: ' + e); } catch(e2) {}
-                try { window.fm && window.fm.done({}); } catch(e3) {}
+                fin({});
               }
             })()
         """.trimIndent()
