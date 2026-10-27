@@ -2,49 +2,46 @@ package com.github.avbox.osc.ui
 
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.net.Uri
 import android.os.Bundle
-import android.os.Environment
 import android.os.Handler
 import android.os.Looper
 import android.view.ViewGroup
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import com.github.avbox.osc.util.KV
 import com.github.avbox.osc.util.AppLog
+import com.github.avbox.osc.util.KV
 import org.json.JSONObject
-import java.io.File
 
 /**
- * HTML 脚本（type 6）的全屏承载页。
+ * HTML 站点（type 6）的全屏网页容器。
  *
- * 职责只有两个：跑脚本、把结果带回去。UI 由 App 自己画，
- * 分类与宫格数据是脚本 return 出来的，不是 WebView 渲染出来的。
+ * 【范式】对应 appmenu 的 WvWv：页面只是【被打开的应用】，不负责回传数据。
+ * 本页职责就一个 —— 把 url 打开并让它正常跑起来。分类宫格由 HtmlSpider 在
+ * Java 侧造好，所以首页永远有数据；点宫格只是再打开一次本页。
  *
- * 生命周期：HtmlSpider 每次调用都新起一次本页 → 注入 fm-api.js →
- * 调脚本对应的全局函数 → 脚本 return（或调 fm.done）→ 回传 → 本页关闭。
- * 所以进站点会看到它弹一次，之后点宫格再弹一次，符合"用完即走"。
+ * 两个关键点，缺一个就是"只出框架没数据"：
+ *   1) 本地 html 走 http://127.0.0.1:9978/file/...（svc 已在 HtmlSpider 侧换算），
+ *      不再用 loadDataWithBaseURL 把正文塞进 data 主文档 —— 那样页面 origin
+ *      失真，页内 fetch/XHR 全被 CORS 打死。
+ *   2) 注入 fetch 补丁，把页内 fetch 接到 FmBridge.req（走 App 网络栈 + 站点代理）。
+ *      WebView 自己的网络栈不认 OkHttp 的 proxySelector，不补这层代理形同虚设。
  */
 class HtmlActivity : Activity() {
 
     data class Request(
         val siteKey: String,
-        val api: String,
-        val ext: String,
-        val method: String,
-        val args: String,
-        val callback: (String?) -> Unit,
+        val url: String,
+        val proxy: String = "",
+        val patchFetch: Boolean = true,
+        val interceptAll: Boolean = false,
+        val ext: String = "",
     )
 
     private var webView: WebView? = null
     private val mainHandler = Handler(Looper.getMainLooper())
-    private var settled = false
     private var currentReq: Request? = null
     private var curSiteKey: String? = null
-    /** 每次调用只允许注入执行一次：onPageFinished 会因重定向/iframe 触发多次，
-     *  重复执行会让脚本回调两次，Spider 侧拿到第二次的空结果。 */
-    private var invoked = false
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -54,52 +51,54 @@ class HtmlActivity : Activity() {
             finish()
             return
         }
-        pendingRequest = req
+        pending = null
         currentReq = req
         curSiteKey = req.siteKey
         live = this
 
         val wv = WebView(this)
         webView = wv
-        setContentView(wv, ViewGroup.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.MATCH_PARENT,
-        ))
+        setContentView(
+            wv,
+            ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT,
+            ),
+        )
 
         wv.settings.javaScriptEnabled = true
         wv.settings.domStorageEnabled = true
-        // 在线 url 页面常是 https 壳里嵌 http 资源，默认 MIXED_CONTENT_NEVER_ALLOW
-        // 会直接拦掉，页面白屏、脚本永远不执行 —— 表现为「url 的 html 打不开」。
-        wv.settings.mixedContentMode = android.webkit.WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
         wv.settings.loadWithOverviewMode = true
         wv.settings.useWideViewPort = true
-        wv.settings.userAgentString = wv.settings.userAgentString
+        // 远程页面常是 https 壳里嵌 http 子资源；不允许混合内容会直接白屏
+        @Suppress("DEPRECATION")
+        wv.settings.mixedContentMode = android.webkit.WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+        wv.settings.javaScriptCanOpenWindowsAutomatically = true
+        // 兜底：svc 换算失败退回 file:// 时，页内跨域请求还能过
         @Suppress("DEPRECATION")
         wv.settings.allowUniversalAccessFromFileURLs = true
         wv.addJavascriptInterface(Bridge(req), "FmBridge")
 
-        // 脚本不回调时兜底关闭，避免页面常驻挡住操作
-        mainHandler.postDelayed({ settle(null) }, AUTO_CLOSE_MS)
-
         wv.webViewClient = object : WebViewClient() {
+
             override fun onPageStarted(
                 view: WebView?,
                 url: String?,
                 favicon: android.graphics.Bitmap?,
             ) {
-                // 提前把 fm 挂上：有些脚本在页面顶层就要用 fm.req 预热数据，
+                // 提前把 fm 挂上：有些页面在顶层脚本里就要用 fm.req，
                 // 等 onPageFinished 才注入的话那段代码已经因 fm undefined 崩掉了
                 injectApiOnly()
             }
 
             override fun onPageFinished(view: WebView?, url: String?) {
-                injectAndInvoke(req)
+                if (req.patchFetch) injectFetchPatch()
             }
 
             /**
-             * 把页面里的子资源接到 App 网络栈，让站点代理对 WebView 同样生效 ——
-             * WebView 自己是不认 OkHttp 的 proxySelector 的。
-             * 取不到就返回 null，交给 WebView 自己加载，不硬拦。
+             * 子资源接到 App 网络栈，让站点代理对 WebView 同样生效。
+             * 本地文件服务（127.0.0.1）必须放过 —— 否则页面正文/资源会被自己拦死。
+             * 取不到就返回 null，交回 WebView 自己加载，不硬拦。
              */
             override fun shouldInterceptRequest(
                 view: WebView?,
@@ -107,12 +106,14 @@ class HtmlActivity : Activity() {
             ): android.webkit.WebResourceResponse? {
                 val r = request ?: return null
                 if (r.method != "GET") return null
-                if (r.isForMainFrame) return null // 主文档已由我们走代理取过
-                val url = r.url?.toString() ?: return null
-                if (!url.startsWith("http://") && !url.startsWith("https://")) return null
+                if (r.isForMainFrame) return null
+                val u = r.url?.toString() ?: return null
+                if (!u.startsWith("http://") && !u.startsWith("https://")) return null
+                if (isLocalService(u)) return null
+                val target = if (req.interceptAll) u else u
                 return try {
                     val resp = com.github.catvod.net.OkHttp.client()
-                        .newCall(okhttp3.Request.Builder().url(url).build())
+                        .newCall(okhttp3.Request.Builder().url(target).build())
                         .execute()
                     val type = resp.header("content-type") ?: "application/octet-stream"
                     val mime = type.split(";")[0].trim()
@@ -129,94 +130,29 @@ class HtmlActivity : Activity() {
                 }
             }
 
-            // 在线 url 打不开（DNS/404/证书…）时立刻交付，别让 Spider 干等 30 秒超时
-            override fun onReceivedError(
-                view: WebView?,
-                errorCode: Int,
-                description: String?,
-                failingUrl: String?,
-            ) {
-                AppLog.i("$TAG: load error $errorCode ${description ?: ""}")
-                settle(null)
-            }
-
             override fun onReceivedError(
                 view: WebView?,
                 request: android.webkit.WebResourceRequest?,
                 error: android.webkit.WebResourceError?,
             ) {
-                // Android 6+ 走这个重载；只对主请求生效，子资源失败不算
-                if (request != null && !request.isForMainFrame) return
-                AppLog.i("$TAG: load error ${error?.errorCode} ${error?.description}")
-                settle(null)
-            }
-        }
-
-        val html = loadLocal(req.api)
-        if (html != null) {
-            // 本地脚本：读正文塞进去，baseUrl 用脚本所在目录，脚本里的相对引用才解析得到
-            val base = localBase(req.api)
-            wv.loadDataWithBaseURL(base, html, "text/html", "UTF-8", null)
-        } else {
-            // 远程 url：先用 App 网络栈（走站点代理）把正文取回来再注入。
-            // 直接 loadUrl 的话 WebView 走自己的网络栈，代理对它完全无效。
-            fetchRemoteThenLoad(wv, req)
-        }
-    }
-
-    /**
-     * 远程 html：走 OkHttp（挂了代理选择器）下载正文，再以原 url 为 baseUrl 注入。
-     * 这样页面正文和页面里的子资源都走同一套代理规则；
-     * 取不到正文（比如纯动态渲染的页面）才退回直接 loadUrl。
-     */
-    private fun fetchRemoteThenLoad(wv: WebView, req: Request) {
-        val url = req.api
-        Thread {
-            var text: String? = null
-            var charset = "UTF-8"
-            try {
-                val resp = com.github.catvod.net.OkHttp.client()
-                    .newCall(okhttp3.Request.Builder().url(url).build())
-                    .execute()
-                charset = charsetOf(resp.header("content-type"))
-                text = resp.body?.string()
-                resp.close()
-            } catch (th: Throwable) {
-                AppLog.e(TAG, th)
-            }
-            mainHandler.post {
-                if (isFinishing || isDestroyed) return@post
-                val view = webView ?: return@post
-                if (text.isNullOrEmpty()) {
-                    AppLog.i("$TAG: remote html empty, fallback to loadUrl")
-                    view.loadUrl(url)
-                } else {
-                    view.loadDataWithBaseURL(url, text, "text/html", charset, null)
+                if (request?.isForMainFrame != false) {
+                    AppLog.e(TAG, "load failed: " + req.url + " err=" + (error?.description ?: ""))
                 }
             }
-        }.start()
-    }
+        }
 
-    private fun charsetOf(contentType: String?): String {
-        if (contentType.isNullOrEmpty()) return "UTF-8"
-        val i = contentType.indexOf("charset=")
-        if (i < 0) return "UTF-8"
-        return contentType.substring(i + "charset=".length)
-            .split(";", ",")[0].trim().trim('"').ifEmpty { "UTF-8" }
+        wv.loadUrl(req.url)
     }
 
     override fun onDestroy() {
         if (live === this) live = null
-        mainHandler.removeCallbacks(idleClose)
-        val left = currentReq
         currentReq = null
-        left?.callback?.invoke(null)
         webView?.destroy()
         webView = null
         super.onDestroy()
     }
 
-    /** 只把 fm-api.js 挂进页面，不调用任何脚本函数（供 onPageStarted 用） */
+    /** 只把 fm-api.js 挂进页面，不做其它动作（供 onPageStarted 用） */
     private fun injectApiOnly() {
         val api = readAsset("fm-api.js") ?: return
         val view = webView ?: return
@@ -230,125 +166,22 @@ class HtmlActivity : Activity() {
         }
     }
 
-    private fun injectAndInvoke(req: Request) {
-        if (invoked) return
-        invoked = true
-        val api = readAsset("fm-api.js") ?: ""
-        val argsArray = argsToArray(req.method, req.args)
-        val script = """
-            (function(){
-              try { $api } catch(e) {}
-              // 复用页面时 fm 已存在，必须先复位回传闸门，否则 fm.done() 被吞
-              try { if (window.fm && typeof window.fm.reset === 'function') window.fm.reset(); } catch(e) {}
-              var fin = function(v){ try { window.fm && window.fm.done(v); } catch(e) {} };
-              try {
-                var fn = window['${req.method}'];
-                if (typeof fn !== 'function') { fin({}); return; }
-                var r = fn.apply(null, $argsArray);
-                // 脚本写成 async / 返回 Promise 时，直接 done(Promise) 会被
-                // JSON.stringify 成 {} —— 必须等它落地再取真实值
-                if (r && typeof r.then === 'function') {
-                  Promise.resolve(r).then(function(v){
-                    fin(v === undefined || v === null ? {} : v);
-                  }).catch(function(e){
-                    try { window.fm && window.fm.log('invoke error: ' + e); } catch(e2) {}
-                    fin({});
-                  });
-                  return;
-                }
-                if (r !== undefined && r !== null) { fin(r); return; }
-                // 同步无返回值：交给脚本自己 fm.done()，这里什么都不做
-              } catch(e) {
-                try { window.fm && window.fm.log('invoke error: ' + e); } catch(e2) {}
-                fin({});
-              }
-            })()
-        """.trimIndent()
+    /**
+     * fetch 补丁：把页内 fetch 接到 fm.req（= FmBridge.req，走 App 网络栈 + 站点代理）。
+     *
+     * 不做这层的话，页内 fetch 由 WebView 内核直发，拦不到也管不着代理 ——
+     * 需要代理的页面就永远取不到数据。原生 fetch 只用于本地/非 http 的兜底。
+     */
+    private fun injectFetchPatch() {
         val view = webView ?: return
         mainHandler.post {
             try {
                 @Suppress("DEPRECATION")
-                view.evaluateJavascript(script, null)
+                view.evaluateJavascript(FETCH_PATCH, null)
             } catch (th: Throwable) {
                 AppLog.e(TAG, th)
-                settle(null)
             }
         }
-    }
-
-    /** 把 Spider 侧的 JSONObject 还原成脚本函数的实参列表（按 TVBox html 约定的签名顺序） */
-    private fun argsToArray(method: String, args: String): String {
-        val o = try {
-            JSONObject(args)
-        } catch (th: Throwable) {
-            return "[]"
-        }
-        return try {
-            when (method) {
-                "homeContent" -> org.json.JSONArray().put(o.optBoolean("filter")).toString()
-                "homeVideoContent" -> "[]"
-                "categoryContent" -> org.json.JSONArray()
-                    .put(o.optString("tid"))
-                    .put(o.optString("pg"))
-                    .put(o.optBoolean("filter"))
-                    .put(o.optString("extend")).toString()
-                "detailContent" -> org.json.JSONArray().put(o.optJSONArray("ids") ?: org.json.JSONArray()).toString()
-                "searchContent" -> org.json.JSONArray()
-                    .put(o.optString("key"))
-                    .put(o.optBoolean("quick")).toString()
-                "playerContent" -> org.json.JSONArray()
-                    .put(o.optString("flag"))
-                    .put(o.optString("id"))
-                    .put(o.optJSONArray("vipFlags") ?: org.json.JSONArray()).toString()
-                else -> org.json.JSONArray().put(o).toString()
-            }
-        } catch (th: Throwable) {
-            "[]"
-        }
-    }
-
-    /**
-     * 交付结果但【不关页】：同一站点的后续调用（翻页、点宫格…）继续复用本页。
-     * 之前是"每次调用都 startActivity → finish"，首页加载要跑
-     * homeContent / homeVideoContent / categoryContent 三次，于是反复前后台切换。
-     */
-    private fun settle(result: String?) {
-        val req = currentReq ?: pendingRequest ?: return
-        currentReq = null
-        pendingRequest = null
-        try {
-            req.callback.invoke(result)
-        } catch (th: Throwable) {
-            AppLog.e(TAG, th)
-        }
-        mainHandler.removeCallbacks(idleClose)
-        mainHandler.postDelayed(idleClose, IDLE_CLOSE_MS)
-    }
-
-    private val idleClose = Runnable { finishNow() }
-
-    private fun finishNow() {
-        mainHandler.removeCallbacks(idleClose)
-        val left = currentReq
-        currentReq = null
-        try {
-            left?.callback?.invoke(null)
-        } catch (th: Throwable) {
-            AppLog.e(TAG, th)
-        }
-        try {
-            finish()
-        } catch (ignored: Throwable) {
-        }
-    }
-
-    /** 复用本页再跑一次脚本（仅 siteKey 相同时调用） */
-    private fun dispatch(req: Request) {
-        mainHandler.removeCallbacks(idleClose)
-        currentReq = req
-        curSiteKey = req.siteKey
-        invoked = false   // 复用本页跑下一次调用，允许再注入一次
-        injectAndInvoke(req)
     }
 
     private fun readAsset(name: String): String? =
@@ -359,35 +192,12 @@ class HtmlActivity : Activity() {
             null
         }
 
-    private fun loadLocal(api: String): String? {
-        val path = resolveLocalPath(api) ?: return null
-        return try {
-            val f = File(path)
-            if (f.exists()) f.readText() else null
-        } catch (th: Throwable) {
-            null
-        }
-    }
-
-    private fun localBase(api: String): String {
-        val path = resolveLocalPath(api) ?: return "file:///android_asset/"
-        val f = File(path)
-        return "file://" + (f.parent ?: "/") + "/"
-    }
-
-    /** 复用配置解析里同一套换算：clan://localhost/x 与 file://x 都落到真实路径 */
-    private fun resolveLocalPath(api: String): String? {
-        var url = api
-        val pk = url.indexOf(";pk;")
-        if (pk >= 0) url = url.substring(0, pk)
-        val q = url.indexOf('?')
-        if (q >= 0) url = url.substring(0, q)
-        if (url.startsWith("clan://localhost/")) {
-            return Environment.getExternalStorageDirectory().absolutePath + "/" +
-                Uri.decode(url.substring("clan://localhost/".length))
-        }
-        if (url.startsWith("file://")) return Uri.decode(url.substring("file://".length))
-        return if (url.startsWith("/")) url else null
+    private fun charsetOf(contentType: String?): String {
+        if (contentType.isNullOrEmpty()) return "UTF-8"
+        val i = contentType.indexOf("charset=")
+        if (i < 0) return "UTF-8"
+        return contentType.substring(i + "charset=".length)
+            .split(";", ",")[0].trim().trim('"').ifEmpty { "UTF-8" }
     }
 
     private inner class Bridge(private val req: Request) {
@@ -449,27 +259,33 @@ class HtmlActivity : Activity() {
             }
         }
 
+        /** 页面自己要求关闭（fm.close()） */
         @JavascriptInterface
         fun done(result: String?) {
-            mainHandler.post { settle(result) }
+            mainHandler.post { finishNow() }
+        }
+    }
+
+    private fun finishNow() {
+        try {
+            finish()
+        } catch (ignored: Throwable) {
         }
     }
 
     companion object {
         private const val TAG = "HtmlActivity"
-        private const val AUTO_CLOSE_MS = 30_000L
-        private const val IDLE_CLOSE_MS = 8_000L
 
         @Volatile
         var pending: Request? = null
 
         @Volatile
-        private var pendingRequest: Request? = null
-
-        @Volatile
         var live: HtmlActivity? = null
 
-        /** 站点相同则复用已存活的页面再跑一次，返回 true 表示已投递、无需新建 */
+        /**
+         * 同一站点的页面还活着 → 不重复拉起（首页多次调用不会反复弹页面）。
+         * 页面被关闭后 live 为空，再点宫格会正常新建 —— 这就是"误关后能重新打开"。
+         */
         @JvmStatic
         fun dispatchToLive(req: Request): Boolean {
             val act = live ?: return false
@@ -478,7 +294,6 @@ class HtmlActivity : Activity() {
                 return false
             }
             if (act.curSiteKey != req.siteKey) return false
-            act.dispatch(req)
             return true
         }
 
@@ -491,8 +306,71 @@ class HtmlActivity : Activity() {
             act.mainHandler.post { act.finishNow() }
         }
 
+        private fun isLocalService(u: String): Boolean =
+            u.contains("127.0.0.1") || u.contains("localhost") || u.contains("[::1]")
+
         private fun varKey(siteKey: String, key: String?): String =
             "html_var_" + siteKey + "_" + (key ?: "")
 
+        /**
+         * fetch 补丁（对应 appmenu WvWv 的 FetchPatch）。
+         * 页内 fetch → fm.req（Java OkHttp，走站点代理）；失败退回原生 fetch。
+         */
+        private const val FETCH_PATCH = """
+(function(){
+  if (window.__fmFetchPatched) return;
+  var NF = window.fetch;
+  if (!NF) return;
+  window.__fmFetchPatched = true;
+  var NFB = NF.bind(window);
+  function toUrl(i){ return (typeof i === 'string') ? i : ((i && i.url) || ''); }
+  function ok(u){
+    if (!u) return false;
+    if (!/^https?:\/\//i.test(u)) return false;
+    if (/127\.0\.0\.1|localhost|\[::1\]/i.test(u)) return false;
+    return true;
+  }
+  function hdrs(h){
+    var o = {};
+    try {
+      if (!h) return o;
+      if (typeof Headers !== 'undefined' && h instanceof Headers) {
+        h.forEach(function(v,k){ o[k] = v; });
+        return o;
+      }
+      if (Object.prototype.toString.call(h) === '[object Array]') {
+        for (var i=0;i<h.length;i++) o[h[i][0]] = h[i][1];
+        return o;
+      }
+      for (var k in h) { if (Object.prototype.hasOwnProperty.call(h,k)) o[k] = h[k]; }
+    } catch(e) {}
+    return o;
+  }
+  function mk(txt, u){
+    try {
+      return new Response(txt, {status:200, statusText:'OK', headers:{'content-type':'text/plain;charset=utf-8'}});
+    } catch(e) {
+      return { ok:true, status:200, url:u, text:function(){ return Promise.resolve(txt); },
+               json:function(){ try { return Promise.resolve(JSON.parse(txt)); } catch(e2){ return Promise.reject(e2); } },
+               headers:{ get:function(){ return null; } } };
+    }
+  }
+  window.fetch = function(input, init){
+    var u = toUrl(input);
+    if (!ok(u)) return NFB(input, init);
+    var src = init || ((typeof input === 'object' && input) ? input : null);
+    var m = 'GET', h = null, b = null;
+    if (src) { m = (src.method || 'GET').toUpperCase(); h = src.headers; b = src.body; }
+    /* 非字符串 body（FormData/Blob/Stream）不接管，避免转码失真 */
+    if (b != null && typeof b !== 'string') return NFB(input, init);
+    try {
+      var txt = window.fm.req(u, { method:m, headers:hdrs(h), body:(b == null ? '' : b) });
+      return Promise.resolve(mk(txt, u));
+    } catch(e) {
+      return NFB(input, init);
+    }
+  };
+})();
+"""
     }
 }

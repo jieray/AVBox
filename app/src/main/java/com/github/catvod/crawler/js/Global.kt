@@ -643,7 +643,7 @@ class Global {
      * T4 / 猫影视系 dialog API —— 同步阻塞版。
      *
      * 脚本写法：const r = await dialog({title, message, inputs:[...], buttons:[...], onAction})
-     * 返回：{ button: '点了哪个按钮', values: { 输入框名: 值 } }
+     * 返回：{ button: '点了哪个按钮', id: '按钮 id', values: { 输入框名: 值 } }
      *
      * 之所以做成同步阻塞：QuickJS 的 Promise 要靠 job 队列驱动，走真正的异步
      * 很容易让 await 永远挂住。这里由 JS 线程阻塞等待，等待期间周期性驱动
@@ -679,7 +679,7 @@ class Global {
         }
         val queue = LinkedBlockingQueue<DialogEvent>()
         val main = Handler(Looper.getMainLooper())
-        val edits = ArrayList<Pair<String, android.widget.EditText>>()
+        val edits = ArrayList<DialogInput>()
         val msgView = AtomicReference<android.widget.TextView?>(null)
         val dlgRef = AtomicReference<android.app.AlertDialog?>(null)
 
@@ -699,44 +699,81 @@ class Global {
                 val inputCount = inputs?.length() ?: 0
                 for (i in 0 until inputCount) {
                     val item = inputs!!.opt(i)
-                    val label = dialogLabel(item, i)
+                    val jo = item as? org.json.JSONObject
+                    val keys = dialogValueKeys(item, i)
                     val et = android.widget.EditText(act)
-                    et.hint = label
+                    et.hint = keys.firstOrNull() ?: "input$i"
                     et.setSingleLine(true)
                     et.setTextColor(0xFFFFFFFF.toInt())
                     et.setHintTextColor(0xFF888888.toInt())
+                    val preset = jo?.optString("value") ?: ""
+                    if (preset.isNotEmpty()) et.setText(preset)
                     if (dialogIsPassword(item)) {
                         et.inputType = android.text.InputType.TYPE_CLASS_TEXT or
                             android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
                     }
-                    wrap.addView(et)
-                    edits.add(Pair(label, et))
+                    // 输入框自带的快捷按钮（发验证码、选登录方式等）：
+                    // 点了只回调 onAction，窗口保持打开，脚本可以继续改提示
+                    val subs = jo?.optJSONArray("buttons")
+                    if (subs != null && subs.length() > 0) {
+                        val row = android.widget.LinearLayout(act)
+                        row.orientation = android.widget.LinearLayout.HORIZONTAL
+                        row.gravity = android.view.Gravity.CENTER_VERTICAL
+                        row.addView(et, android.widget.LinearLayout.LayoutParams(0, -2, 1f))
+                        for (b in 0 until subs.length()) {
+                            val subItem = subs.opt(b)
+                            val name = dialogLabel(subItem, b)
+                            val btn = android.widget.Button(act)
+                            btn.text = name
+                            btn.setAllCaps(false)
+                            btn.minWidth = 0
+                            btn.minimumWidth = 0
+                            btn.setPadding(pad / 2, 0, pad / 2, 0)
+                            btn.setOnClickListener {
+                                queue.offer(
+                                    DialogEvent(name, dialogIdOf(subItem), collectValues(edits), false)
+                                )
+                            }
+                            row.addView(btn)
+                        }
+                        wrap.addView(row)
+                    } else {
+                        wrap.addView(et)
+                    }
+                    edits.add(DialogInput(keys, et))
                 }
 
                 val buttons = spec.optJSONArray("buttons")
                 val buttonCount = buttons?.length() ?: 0
                 val names = ArrayList<String>()
-                for (i in 0 until buttonCount) names.add(dialogLabel(buttons!!.opt(i), i))
+                val ids = ArrayList<String?>()
+                for (i in 0 until buttonCount) {
+                    val item = buttons!!.opt(i)
+                    names.add(dialogLabel(item, i))
+                    ids.add(dialogIdOf(item))
+                }
                 if (names.isEmpty()) {
                     names.add("确定")
+                    ids.add(null)
                     names.add("取消")
+                    ids.add(null)
                 }
-                val fire: (String) -> Unit = { which ->
-                    val vals = LinkedHashMap<String, String>()
-                    for (entry in edits) vals[entry.first] = entry.second.text.toString()
-                    queue.offer(DialogEvent(which, vals, false))
+                val fire: (Int) -> Unit = { idx ->
+                    queue.offer(
+                        DialogEvent(names[idx], ids.getOrNull(idx), collectValues(edits), false)
+                    )
                 }
                 val builder = android.app.AlertDialog.Builder(act)
                     .setTitle(spec.optString("title"))
                     .setView(wrap)
-                if (names.size > 0) builder.setPositiveButton(names[0]) { _, _ -> fire(names[0]) }
-                if (names.size > 1) builder.setNegativeButton(names[1]) { _, _ -> fire(names[1]) }
-                if (names.size > 2) builder.setNeutralButton(names[2]) { _, _ -> fire(names[2]) }
-                builder.setOnCancelListener { queue.offer(DialogEvent(null, emptyMap(), true)) }
+                if (names.size > 0) builder.setPositiveButton(names[0]) { _, _ -> fire(0) }
+                if (names.size > 1) builder.setNegativeButton(names[1]) { _, _ -> fire(1) }
+                if (names.size > 2) builder.setNeutralButton(names[2]) { _, _ -> fire(2) }
+                builder.setOnCancelListener { queue.offer(DialogEvent(null, null, emptyMap(), true)) }
                 dlgRef.set(builder.show())
             } catch (th: Throwable) {
                 AppLog.e("Global", th)
-                queue.offer(DialogEvent(null, emptyMap(), true))
+                queue.offer(DialogEvent(null, null, emptyMap(), true))
             }
         }
 
@@ -757,10 +794,10 @@ class Global {
             }
             if (onAction == null) {
                 main.post { dismissQuietly(dlgRef) }
-                return dialogResult(ctx, ev.button, ev.values)
+                return dialogResult(ctx, ev.button, ev.buttonId, ev.values)
             }
             val msg = try {
-                messageOf(onAction.call(dialogResult(ctx, ev.button, ev.values)))
+                resolveActionMessage(ctx, onAction.call(dialogResult(ctx, ev.button, ev.buttonId, ev.values)))
             } catch (th: Throwable) {
                 AppLog.e("Global", th)
                 ""
@@ -771,7 +808,7 @@ class Global {
                 continue
             }
             main.post { dismissQuietly(dlgRef) }
-            return dialogResult(ctx, ev.button, ev.values)
+            return dialogResult(ctx, ev.button, ev.buttonId, ev.values)
         }
     }
 
@@ -783,19 +820,52 @@ class Global {
         }
     }
 
-    private fun dialogResult(ctx: QuickJSContext, button: String?, values: Map<String, String>): JSObject {
+    private fun collectValues(edits: List<DialogInput>): Map<String, String> {
+        val vals = LinkedHashMap<String, String>()
+        for (entry in edits) {
+            val text = entry.edit.text.toString()
+            // 同一个输入框按所有可能的键都写一份：脚本用 id 取、用 name 取都能拿到
+            for (k in entry.keys) vals[k] = text
+        }
+        return vals
+    }
+
+    private fun dialogResult(
+        ctx: QuickJSContext,
+        button: String?,
+        buttonId: String?,
+        values: Map<String, String>,
+    ): JSObject {
         val obj = ctx.createNewJSObject()
         val vals = ctx.createNewJSObject()
         for ((key, value) in values) ctx.setProperty(vals, key, value)
         ctx.setProperty(obj, "values", vals)
         if (button != null) ctx.setProperty(obj, "button", button)
+        if (buttonId != null) ctx.setProperty(obj, "id", buttonId)
         return obj
+    }
+
+    /** 输入框在 values 里的键：id / name / title / label 等都认，全建一遍避免脚本取不到 */
+    private fun dialogValueKeys(item: Any?, index: Int): List<String> {
+        val keys = ArrayList<String>()
+        fun add(v: String?) {
+            if (!v.isNullOrEmpty() && !keys.contains(v)) keys.add(v)
+        }
+        if (item is org.json.JSONObject) {
+            for (k in arrayOf("id", "name", "title", "label", "text", "key", "field")) {
+                add(item.optString(k))
+            }
+        } else if (item != null) {
+            add(item.toString())
+        }
+        if (keys.isEmpty()) add("input$index")
+        return keys
     }
 
     /** 输入框名 / 按钮文案：既认字符串，也认对象里的 name/title/label 等字段 */
     private fun dialogLabel(item: Any?, index: Int): String {
         if (item is org.json.JSONObject) {
-            for (k in arrayOf("name", "title", "label", "text", "placeholder", "hint", "key")) {
+            for (k in arrayOf("name", "title", "label", "text", "placeholder", "hint", "id", "key")) {
                 val v = item.optString(k)
                 if (v.isNotEmpty()) return v
             }
@@ -804,6 +874,12 @@ class Global {
             if (s.isNotEmpty()) return s
         }
         return "input$index"
+    }
+
+    private fun dialogIdOf(item: Any?): String? {
+        if (item !is org.json.JSONObject) return null
+        val v = item.optString("id")
+        return if (v.isEmpty()) null else v
     }
 
     private fun dialogIsPassword(item: Any?): Boolean {
@@ -819,6 +895,67 @@ class Global {
             null
         } ?: return ""
         return jo.optString("msg", jo.optString("message", ""))
+    }
+
+    /**
+     * onAction 往往写成 async，返回值是个 Promise。这里挂上 then 并持续驱动
+     * job 队列，等 Promise 真正落地再取其返回值；reject 时把错误原文回显到
+     * 窗口上，方便排查（否则脚本里一句 is not a function 会静默吞掉）。
+     */
+    private fun resolveActionMessage(ctx: QuickJSContext, ret: Any?): String {
+        val obj = ret as? JSObject ?: return messageOf(ret)
+        val then = try {
+            obj.getJSFunction("then")
+        } catch (th: Throwable) {
+            null
+        } ?: return messageOf(ret)
+
+        val slot = PromiseSlot()
+        val host = ctx.createNewJSObject()
+        ctx.setProperty(host, "__ok", object : JSCallFunction {
+            override fun call(vararg args: Any?): Any? {
+                slot.value = args.firstOrNull()
+                slot.done = true
+                return null
+            }
+        })
+        ctx.setProperty(host, "__err", object : JSCallFunction {
+            override fun call(vararg args: Any?): Any? {
+                slot.error = describeJs(args.firstOrNull())
+                slot.done = true
+                return null
+            }
+        })
+        val ok = try {
+            host.getJSFunction("__ok")
+        } catch (th: Throwable) {
+            null
+        }
+        val err = try {
+            host.getJSFunction("__err")
+        } catch (th: Throwable) {
+            null
+        }
+        if (ok == null) return ""
+        try {
+            if (err != null) then.call(ok, err) else then.call(ok)
+        } catch (th: Throwable) {
+            AppLog.e("Global", th)
+            return ""
+        }
+
+        val deadline = System.currentTimeMillis() + DIALOG_ACTION_TIMEOUT_MS
+        while (!slot.done) {
+            drainPendingJobs(ctx)
+            if (System.currentTimeMillis() > deadline) break
+            try {
+                Thread.sleep(20)
+            } catch (th: Throwable) {
+                break
+            }
+        }
+        if (slot.error.isNotEmpty()) return "脚本报错：" + slot.error
+        return if (slot.done) messageOf(slot.value) else ""
     }
 
     /** 驱动 QuickJS 的 Promise 任务队列，让 onAction 里的 await 能继续往下跑 */
@@ -840,8 +977,37 @@ class Global {
         }
     }
 
+    private fun describeJs(v: Any?): String {
+        if (v == null) return "null"
+        if (v is JSObject) {
+            return try {
+                JSUtils.toJsonObject(v).toString()
+            } catch (th: Throwable) {
+                v.toString()
+            }
+        }
+        return v.toString()
+    }
+
+    private class DialogInput(
+        val keys: List<String>,
+        val edit: android.widget.EditText,
+    )
+
+    private class PromiseSlot {
+        @Volatile
+        var done: Boolean = false
+
+        @Volatile
+        var value: Any? = null
+
+        @Volatile
+        var error: String = ""
+    }
+
     private class DialogEvent(
         val button: String?,
+        val buttonId: String?,
         val values: Map<String, String>,
         val dismissed: Boolean,
     )
@@ -976,6 +1142,7 @@ class Global {
         }
 
         private const val DIALOG_TIMEOUT_MS = 300_000L
+        private const val DIALOG_ACTION_TIMEOUT_MS = 60_000L
 
         private const val DEFAULT_CHUNK = 65536
 
