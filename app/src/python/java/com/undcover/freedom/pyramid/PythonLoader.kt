@@ -68,44 +68,6 @@ class PythonLoader {
         }
     }
 
-    /**
-     * 把原生界面能力注入 python 的 builtins，脚本里直接 dialog(...) 就能用。
-     * 注入失败只记日志，不影响 python 环境本身。
-     */
-    private fun installPyBridge(py: Python) {
-        try {
-            val code = """
-                import builtins, json
-                from com.undcover.freedom.pyramid import PyDialog
-
-                def dialog(spec=None, **kwargs):
-                    d = {}
-                    if spec:
-                        d.update(spec)
-                    if kwargs:
-                        d.update(kwargs)
-                    r = PyDialog.dialog(json.dumps(d, ensure_ascii=False))
-                    if not r:
-                        return None
-                    return json.loads(r)
-
-                def getActivity():
-                    return PyDialog.getActivity()
-
-                def runOnUiThread(fn):
-                    return PyDialog.runOnUi(fn)
-
-                builtins.dialog = dialog
-                builtins.getActivity = getActivity
-                builtins.runOnUiThread = runOnUiThread
-            """.trimIndent()
-            py.getBuiltins().callAttr("exec", code)
-            AppLog.i("PythonLoader: py bridge installed")
-        } catch (th: Throwable) {
-            AppLog.e("PythonLoader", th)
-        }
-    }
-
     private fun setSdk(context: Context) {
         val logLevel = if (BuildConfig.DEBUG) PyLog.LEVEL_V else PyLog.LEVEL_RELEASE
         val logFilter = if (BuildConfig.DEBUG) PyLog.FILTER_NW or PyLog.FILTER_LC else 0
@@ -143,7 +105,6 @@ class PythonLoader {
                 val py = Python.getInstance()
                 pyInstance = py
                 pyApp = py.getModule("app")
-                installPyBridge(py)
             } catch (th: Throwable) {
                 throw RuntimeException(th)
             }

@@ -108,13 +108,125 @@ class JsSpider : Spider {
             val name = methodName(method)
             set(target, name, object : JSCallFunction {
                 override fun call(vararg args: Any?): Any? {
-                    try {
-                        return method.invoke(receiver, *args)
-                    } catch (ignored: Throwable) {
-                        return null
-                    }
+                    return callJava(method, receiver, args)
                 }
             })
+        }
+    }
+
+    /**
+     * 宿主把 Java/Kotlin 方法暴露给脚本时的统一入口。
+     *
+     * 以前是 method.invoke 一把梭、异常一律吞掉返回 null。后果是脚本传参个数
+     * 或类型对不上（比如 getProxy() 不传参、脚本给数字而宿主声明的是 Int），
+     * 调用直接失败并返回 null，脚本侧只会看到莫名其妙的 "is not a function"
+     * 或拿到空值，宿主这边一点痕迹都没有，问题根本没法查。
+     *
+     * 现在：先按原样调一次（保证原有行为完全不变）；失败则做一次参数自适应
+     * 再试（补齐缺失参数、数字/字符串/布尔互转）；仍失败就记日志，方便定位。
+     */
+    private fun callJava(method: Method, receiver: Any, args: Array<out Any?>): Any? {
+        val direct = arrayOf<Any?>(*args)
+        try {
+            return method.invoke(receiver, *direct)
+        } catch (e: Throwable) {
+            if (!isArgMismatch(e)) {
+                logJavaFail(method, e)
+                return null
+            }
+            val adapted = adaptArgs(method, direct)
+            if (sameArgs(direct, adapted)) {
+                logJavaFail(method, e)
+                return null
+            }
+            return try {
+                method.invoke(receiver, *adapted)
+            } catch (e2: Throwable) {
+                logJavaFail(method, e2)
+                null
+            }
+        }
+    }
+
+    /**
+     * 只有"参数没进到函数体"这类失败才值得换参数重试。
+     * 函数体里抛出来的业务异常不能在换参数后再跑一遍，否则发请求、弹窗这类
+     * 有副作用的操作会被执行两次。
+     */
+    private fun isArgMismatch(e: Throwable): Boolean {
+        val cause = (e as? java.lang.reflect.InvocationTargetException)?.targetException ?: e
+        return cause is IllegalArgumentException || cause is NullPointerException
+    }
+
+    private fun logJavaFail(method: Method, e: Throwable) {
+        val cause = (e as? java.lang.reflect.InvocationTargetException)?.targetException ?: e
+        AppLog.i("echo-jsapi-fail " + method.name + " msg=" + cause.message)
+    }
+
+    private fun sameArgs(a: Array<Any?>, b: Array<Any?>): Boolean {
+        if (a.size != b.size) return false
+        for (i in a.indices) {
+            if (a[i] !== b[i]) return false
+        }
+        return true
+    }
+
+    private fun adaptArgs(method: Method, args: Array<Any?>): Array<Any?> {
+        val types = method.parameterTypes
+        if (types.isEmpty()) return emptyArray()
+        return Array<Any?>(types.size) { i -> coerce(if (i < args.size) args[i] else null, types[i]) }
+    }
+
+    private fun coerce(value: Any?, type: Class<*>): Any? {
+        if (value == null) return primitiveDefault(type)
+        val target = boxed(type)
+        if (target.isInstance(value)) return value
+        return when (target) {
+            java.lang.Boolean::class.java -> when (value) {
+                is Number -> value.toInt() != 0
+                is String -> value.equals("true", ignoreCase = true) || value == "1"
+                else -> value
+            }
+            java.lang.Integer::class.java -> (value as? Number)?.toInt()
+                ?: (value as? String)?.trim()?.toIntOrNull() ?: value
+            java.lang.Long::class.java -> (value as? Number)?.toLong()
+                ?: (value as? String)?.trim()?.toLongOrNull() ?: value
+            java.lang.Float::class.java -> (value as? Number)?.toFloat()
+                ?: (value as? String)?.trim()?.toFloatOrNull() ?: value
+            java.lang.Double::class.java -> (value as? Number)?.toDouble()
+                ?: (value as? String)?.trim()?.toDoubleOrNull() ?: value
+            java.lang.String::class.java -> value.toString()
+            else -> value
+        }
+    }
+
+    private fun primitiveDefault(type: Class<*>): Any? {
+        if (!type.isPrimitive) return null
+        return when (type) {
+            java.lang.Boolean.TYPE -> false
+            java.lang.Integer.TYPE -> 0
+            java.lang.Long.TYPE -> 0L
+            java.lang.Float.TYPE -> 0f
+            java.lang.Double.TYPE -> 0.0
+            java.lang.Short.TYPE -> 0.toShort()
+            java.lang.Byte.TYPE -> 0.toByte()
+            java.lang.Character.TYPE -> ' '
+            else -> null
+        }
+    }
+
+    private fun boxed(type: Class<*>): Class<*> {
+        if (!type.isPrimitive) return type
+        return when (type) {
+            java.lang.Boolean.TYPE -> java.lang.Boolean::class.java
+            java.lang.Integer.TYPE -> java.lang.Integer::class.java
+            java.lang.Long.TYPE -> java.lang.Long::class.java
+            java.lang.Float.TYPE -> java.lang.Float::class.java
+            java.lang.Double.TYPE -> java.lang.Double::class.java
+            java.lang.Short.TYPE -> java.lang.Short::class.java
+            java.lang.Byte.TYPE -> java.lang.Byte::class.java
+            java.lang.Character.TYPE -> java.lang.Character::class.java
+            else -> type
         }
     }
 
@@ -517,16 +629,31 @@ class JsSpider : Spider {
         }
     }
 
+    /**
+     * 站点自带 jar（com.github.catvod.js.Function）里的方法。
+     *
+     * 主流宿主的做法是让这些方法直接出现在脚本全局作用域里，脚本写
+     * dialog(...) / md5X(...) 就能调到。我们以前只挂在 jsapi.xxx 命名空间下，
+     * 脚本按主流写法调全局就会拿到 undefined，弹窗这类功能于是"看起来没实现"。
+     *
+     * 这里两个都给：jsapi.xxx 保留（兼容已经在用命名空间的脚本），同时往全局
+     * 补一份。补全局时遵循"宿主标准契约优先"——宿主自己已经提供的函数不被
+     * jar 覆盖，jar 只补宿主没有的那些，避免把稳定实现换掉。
+     */
     private fun invoke(jsObj: JSObject, method: Method, javaObj: Any) {
-        set(jsObj, methodName(method), object : JSCallFunction {
+        val name = methodName(method)
+        val callable = object : JSCallFunction {
             override fun call(vararg objects: Any?): Any? {
-                try {
-                    return method.invoke(javaObj, *objects)
-                } catch (e: Throwable) {
-                    return null
-                }
+                return callJava(method, javaObj, objects)
             }
-        })
+        }
+        set(jsObj, name, callable)
+        val globalObj = ctx?.globalObject ?: return
+        try {
+            if (get(globalObj, name) == null) set(globalObj, name, callable)
+        } catch (ignored: Throwable) {
+            AppLog.d("JsSpider", "mirror jar method to global failed")
+        }
     }
 
     private fun getContent(): String? {
