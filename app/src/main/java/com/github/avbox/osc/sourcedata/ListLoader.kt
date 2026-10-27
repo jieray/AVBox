@@ -41,7 +41,8 @@ class ListLoader(
             return
         }
         val type = sourceBean.type
-        if (type == 3) {
+        // type 6 = HTML 脚本站点：分类内容同样由爬虫侧给出，与 type 3 走同一条路
+        if (type == 3 || type == 6) {
             listFromSpider(sourceBean, sortData, page)
         } else if (type == 0 || type == 1) {
             listFromApi(sourceBean, sortData, page)
@@ -142,7 +143,8 @@ class ListLoader(
 
     suspend fun homeRecList(sourceBean: SourceBean, ids: ArrayList<String?>?): MutableList<Movie.Video>? {
         val type = sourceBean.type
-        if (type == 3) {
+        // type 6 = HTML 脚本站点：首页推荐宫格同样走爬虫侧，与 type 3 一致
+        if (type == 3 || type == 6) {
             val sortJson = withContext(Dispatchers.IO) {
                 BoundedCall.call(Callable<String> {
                     val sp = ApiConfig.get().getCSP(sourceBean)

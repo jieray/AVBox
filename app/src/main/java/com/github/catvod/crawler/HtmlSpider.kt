@@ -57,7 +57,14 @@ class HtmlSpider(
         return c.grid(first)
     }
 
-    override fun homeVideoContent(): String = EMPTY_LIST
+    /**
+     * 首页推荐宫格。
+     *
+     * 竖版布局下首页不取 homeContent 里的 list，而是单独走 homeVideoContent，
+     * 所以这里必须把宫格给出来，否则竖版下 HTML 站点一个格子都没有
+     * （表现就是"站点能切换、界面一点反应也没有"）。
+     */
+    override fun homeVideoContent(): String = config().grid("0")
 
     override fun categoryContent(
         tid: String?,
