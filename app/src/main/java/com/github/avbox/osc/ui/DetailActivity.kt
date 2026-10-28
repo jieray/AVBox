@@ -41,7 +41,7 @@ import com.github.avbox.osc.util.KVKeys
 
 private const val SYSBAR_APPEARANCE_REASSERT_DELAY_MS = 400L
 
-class DetailActivity : BaseActivity(), PageHost {
+open class DetailActivity : BaseActivity(), PageHost {
 
     private val vm: DetailViewModel by lazy {
         ViewModelProvider(this)[DetailViewModel::class.java]
