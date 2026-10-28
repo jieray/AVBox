@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">X-BOX</string>
+    <string name="app_name">XBox</string>
 
     <string name="settings_language">语言</string>
     <string name="settings_group_language_layout">语言与布局</string>
@@ -504,6 +504,7 @@
     <string name="settings_nav_animation_disable">禁用导航动画</string>
     <string name="settings_nav_live_hidden">导航栏隐藏直播</string>
     <string name="settings_auto_switch_line">自动换线</string>
+    <string name="settings_auto_switch_source">自动换源</string>
     <string name="settings_m3u8_purify">M3U8 净化</string>
     <string name="settings_danmu_switch">弹幕开关</string>
     <string name="settings_danmu_api">弹幕 API</string>

@@ -17,6 +17,7 @@ import com.github.avbox.osc.data.VodFollow
 import com.github.avbox.osc.net.SearchHelper
 import com.github.avbox.osc.player.PlaybackService
 import com.github.avbox.osc.player.PlaybackSession
+import com.github.avbox.osc.player.state.PlaybackSettingsState
 import com.github.avbox.osc.sourcedata.SourceViewModel
 import com.github.avbox.osc.util.AppContextHolder
 import com.github.avbox.osc.api.TmdbApi
@@ -799,6 +800,7 @@ class DetailViewModel : ViewModel(), TmdbPosterCache {
     }
 
     private fun startSourceSearch() {
+        if (!PlaybackSettingsState.config.autoSwitchSource) return
         val title = searchTitle.ifEmpty { vodName.trim() }
         if (title.isEmpty()) return
         if (_sourcesSearching.value && searchTitle == title) return
@@ -933,6 +935,7 @@ class DetailViewModel : ViewModel(), TmdbPosterCache {
     fun startFallbackAfterLinesExhausted(): Boolean = startFallbackIfNeeded(auto = true, fromLinesExhausted = true)
 
     private fun startFallbackIfNeeded(auto: Boolean, fromLinesExhausted: Boolean = false): Boolean {
+        if (auto && !PlaybackSettingsState.config.autoSwitchSource) return false
         val currentSource = ApiConfig.get().getSource(sourceKey)
         if (currentSource != null && !currentSource.isChangeable()) return false
         if (fallbackActive) return true

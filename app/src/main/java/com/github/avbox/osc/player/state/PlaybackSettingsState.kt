@@ -17,6 +17,7 @@ data class PlaybackSettingsConfig(
     val playTunnel: Boolean,
     val preferAac: Boolean,
     val autoSwitchLine: Boolean,
+    val autoSwitchSource: Boolean,
     val m3u8Purify: Boolean,
     val bufferTimes: Int,
     val playCache: Boolean,
@@ -44,6 +45,7 @@ object PlaybackSettingsState {
         playTunnel = KV.get(KVKeys.PLAY_TUNNEL, false),
         preferAac = KV.get(KVKeys.PLAY_PREFER_AAC, false),
         autoSwitchLine = KV.get(KVKeys.AUTO_SWITCH_LINE, KVKeys.AUTO_SWITCH_LINE_DEFAULT),
+        autoSwitchSource = KV.get(KVKeys.AUTO_SWITCH_SOURCE, KVKeys.AUTO_SWITCH_SOURCE_DEFAULT),
         m3u8Purify = KV.get(KVKeys.M3U8_PURIFY, false),
         bufferTimes = KV.get(KVKeys.BUFFER_TIMES, KVKeys.BUFFER_TIMES_DEFAULT),
         playCache = KV.get(KVKeys.PLAY_CACHE, false),
@@ -116,6 +118,13 @@ object PlaybackSettingsState {
         set(value) {
             KV.put(KVKeys.AUTO_SWITCH_LINE, value)
             current = current.copy(autoSwitchLine = value)
+        }
+
+    var autoSwitchSource: Boolean
+        get() = current.autoSwitchSource
+        set(value) {
+            KV.put(KVKeys.AUTO_SWITCH_SOURCE, value)
+            current = current.copy(autoSwitchSource = value)
         }
 
     var m3u8Purify: Boolean

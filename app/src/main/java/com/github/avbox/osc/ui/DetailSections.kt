@@ -41,6 +41,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.github.avbox.osc.R
+import com.github.avbox.osc.player.state.PlaybackSettingsState
 
 @Composable
 internal fun SectionTitleIcon(painter: Painter) {
@@ -162,6 +163,7 @@ private fun SourceCard(name: String, selected: Boolean, onClick: () -> Unit) {
 internal fun SourceSection(vm: DetailViewModel, currentSourceName: String?) {
     val sourceChips by vm.sourceChips.collectAsState()
     val sourcesSearching by vm.sourcesSearching.collectAsState()
+    if (!PlaybackSettingsState.config.autoSwitchSource) return
     if (!sourcesSearching && sourceChips.isEmpty()) return
     val listState = rememberLazyListState()
     LaunchedEffect(currentSourceName) {

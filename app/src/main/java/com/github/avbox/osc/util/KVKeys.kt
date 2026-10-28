@@ -55,6 +55,8 @@ object KVKeys {
     const val M3U8_PURIFY = "m3u8_purify"
     const val AUTO_SWITCH_LINE = "auto_switch_line"
     const val AUTO_SWITCH_LINE_DEFAULT = true
+    const val AUTO_SWITCH_SOURCE = "auto_switch_source"
+    const val AUTO_SWITCH_SOURCE_DEFAULT = true
     const val COLLECT_COLUMNS = "collect_columns"
     const val LIVE_WEB_HEADER = "live_web_header"
     const val DEFAULT_LOAD_LIVE = "DEFAULT_LOAD_LIVE"

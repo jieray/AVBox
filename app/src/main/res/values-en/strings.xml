@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">X-BOX</string>
+    <string name="app_name">XBox</string>
 
     <string name="settings_language">Language</string>
     <string name="settings_group_language_layout">Language &amp; Layout</string>
@@ -497,6 +497,7 @@
     <string name="settings_nav_animation_disable">Disable Navigation Animation</string>
     <string name="settings_nav_live_hidden">Hide Live in Navigation Bar</string>
     <string name="settings_auto_switch_line">Auto Switch Line</string>
+    <string name="settings_auto_switch_source">Auto Switch Source</string>
     <string name="settings_m3u8_purify">M3U8 Purify</string>
     <string name="settings_danmu_switch">Danmaku Switch</string>
     <string name="settings_danmu_api">Danmaku API</string>
